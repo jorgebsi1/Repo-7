@@ -1,5 +1,7 @@
 # 03 · Flujos y patrones de UX
 
+> **Nota (etapa 2):** los patrones siguen siendo válidos, pero las pantallas de "menú de platos" y "panel de cocina" se reinterpretan como **catálogo de productos con elección de tienda** y **panel de tienda**; los estados límite incluyen ahora faltantes al alistar, sustitución de productos y ventana de frío. Ver `13-adaptacion-prolac.md`.
+
 Se describen **patrones de interacción** observados en apps de reparto, no pantallas concretas de Uber Eats. La identidad visual debe ser propia (ver `09-diferenciacion.md`).
 
 ## 1. Journey principal del cliente

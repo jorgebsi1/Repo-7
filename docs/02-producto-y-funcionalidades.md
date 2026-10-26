@@ -1,5 +1,7 @@
 # 02 · Producto y funcionalidades
 
+> **Nota (etapa 2):** escrito para comida preparada. Para Prolac (lácteos, multi-tienda), la sección "Cocina / local" pasa a ser **Panel de tienda** (alistar, empacar, faltantes, despacho) y el "menú" es un **catálogo con stock por tienda**. Ver `13-adaptacion-prolac.md`.
+
 Inventario por actor. Columnas: **Ref. Uber** (qué hace Uber Eats, según fuentes), **Nuestra versión** (adaptación a negocio único) y **Fase** (M = MVP, 2 = V2, 3 = V3, – = descartar).
 
 ## 1. Cliente (app móvil + web/PWA)

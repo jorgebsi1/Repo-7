@@ -1,301 +1,274 @@
-# 11 · Cuestionario de descubrimiento
+# 11 · Cuestionario de descubrimiento — Prolac (v2)
 
-Objetivo: saber **quiénes somos, qué hacemos y qué queremos** para la app, y convertir las respuestas en decisiones de alcance, stack y roadmap.
+> **v2:** reescrito tras la tanda 1, cuando se supo que Prolac es un fabricante-minorista de **lácteos** con 6 tiendas y 2 plantas en Perú (ver `12-respuestas-descubrimiento.md`). La v1 asumía un restaurante; se eliminaron las preguntas de cocina, historia y valores. Las preguntas 1–10 ya están respondidas.
+
+Objetivo: saber **qué vende Prolac, cómo opera y qué quiere** de la app, para convertir las respuestas en decisiones de alcance, stack y roadmap.
 
 ## Cómo usarlo
-- Responde debajo de cada pregunta. Si no lo sabes, escribe **"No sé"**: también es información útil.
-- **★ = crítica**: cambia el diseño o el stack. Si solo tienes tiempo para unas pocas, responde las ★ primero (son 37).
-- Puedes responder en el propio archivo, por partes, o en el chat.
+- Se responde por **tandas de 10 preguntas** (en el chat o en `12-respuestas-descubrimiento.md`).
+- Si no lo sabes, escribe **"No sé"**: también es información útil. Si una pregunta no te importa, escribe **"Irrelevante"** y se descarta.
+- **★ = crítica**: cambia el diseño o el stack.
 - Donde haya opciones `[ ]`, marca una o varias con `[x]`.
-- Las cifras aproximadas sirven. Una estimación honesta vale más que un dato inventado con precisión.
+- Las cifras aproximadas sirven.
 
 ## Índice
-1. Identidad del negocio
-2. Oferta: menú y producto
-3. Clientes y mercado
-4. Operación de cocina
-5. Entrega y logística
-6. Canales actuales y competencia
-7. Objetivos y métricas de éxito
-8. Visión de la app (funcionalidades)
-9. Marca, diseño y experiencia
-10. Pagos, precios y finanzas
-11. Legal, fiscal y sanitario
-12. Equipo, presupuesto y plazos
-13. Tecnología y datos existentes
-14. Marketing, fidelización y crecimiento
-15. Riesgos, restricciones y no-negociables
-16. Cierre: prioridades y decisión
+1. Identidad del negocio (1–10) — *respondido*
+2. Catálogo y productos (11–30)
+3. Inventario y producción (31–45)
+4. Tiendas, ciudades y clientes (46–60)
+5. Entrega y cadena de frío (61–75)
+6. Canales actuales y competencia (76–84)
+7. Objetivos y métricas (85–93)
+8. Funcionalidades (94–100)
+9. Marca y diseño (101–107)
+10. Pagos, precios y finanzas (108–120)
+11. Legal, fiscal y sanitario (121–128)
+12. Equipo, presupuesto y plazos (129–138)
+13. Tecnología y datos existentes (139–146)
+14. Marketing y fidelización (147–155)
+15. Riesgos y no-negociables (156–163)
+16. Cierre (164–169)
 
 ---
 
-## 1. Identidad del negocio
-1. ★ ¿Cómo se llama el negocio y desde cuándo opera? (Si aún no existe, ¿en qué etapa está: idea, prototipo, abierto?)
-2. ★ ¿Qué tipo de negocio es?
-   - [ ] Restaurante con sala  [ ] Solo para llevar/entrega  [ ] Dark kitchen  [ ] Panadería/pastelería  [ ] Cafetería  [ ] Comida preparada/meal prep  [ ] Catering  [ ] Productor/tienda de alimentos  [ ] Otro: ___
-3. ★ ¿País, ciudad y barrio(s) donde opera? ¿Hay planes de otras ciudades?
-4. ¿Cuántos locales/cocinas tiene hoy? ¿Y en 2 años?
-5. ¿Es propio, franquicia o parte de un grupo? ¿Quién decide sobre la app?
-6. En una frase: ¿qué hace especial al negocio frente a otros del barrio?
-7. ¿Cuál es la historia, misión o valores que quieres que el cliente note?
-8. ¿Qué te enorgullece del negocio y qué te frustra de cómo funciona hoy?
-9. ¿Quién es "nosotros"? (propietario, socios, gerente, chef, personal de sala, reparto, marketing)
-10. ¿Qué papel tendrá cada persona con la app? (quién atiende pedidos, quién edita el menú, quién gestiona reclamos)
+## 1. Identidad del negocio — *respondido (ver `12`)*
+1. ★ Nombre y antigüedad. 2. ★ Tipo de negocio. 3. ★ País, ciudad y barrio. 4. Locales. 5. Propiedad y decisor. 6–9. *No aplican.* 10. Roles con la app.
 
-## 2. Oferta: menú y producto
-11. ★ ¿Cuántos platos/productos tiene el menú? ¿Cuántos cambian por temporada o por día?
-12. ★ ¿Qué categorías tiene? (entradas, principales, bebidas, postres, combos, etc.)
-13. ★ ¿Qué platos generan más ventas y cuáles más margen? ¿Los conoces con datos?
-14. ¿Los platos son personalizables? Ejemplos: tamaño, ingredientes extra, punto de cocción, sin cebolla, salsas.
-15. ¿Hay combos, menús del día, ofertas fijas, platos "solo para pedido online"?
-16. ¿Vendes bebidas alcohólicas, tabaco u otros productos con restricción de edad?
-17. ★ ¿Qué platos viajan bien y cuáles no (se enfrían, se deshacen, pierden textura)? ¿Hay un tiempo máximo de viaje aceptable?
-18. ¿Cómo empacas? ¿Tienes packaging propio? ¿Lo valoran los clientes? ¿Cuánto cuesta por pedido?
-19. ★ ¿Tienes los alérgenos e ingredientes de cada plato documentados? ¿Quién los mantiene?
-20. ¿Ofreces opciones vegetarianas, veganas, sin gluten, halal, kosher u otras? ¿Con certificación?
-21. ¿Tienes fotografías profesionales de los platos? ¿Quién tiene los derechos?
-22. ¿Con qué frecuencia cambia el menú y quién lo actualiza hoy?
-23. ¿Hay productos que se agotan durante el servicio? ¿Cómo lo gestionas?
-24. ¿Vendes productos no cocinados (salsas, packs, merchandising, tarjetas regalo)?
-25. ¿Quieres vender suscripciones o planes (menú semanal, meal prep, caja mensual)?
-26. ¿Preparas pedidos grandes (oficinas, eventos, catering)? ¿Con cuánta anticipación?
+## 2. Catálogo y productos
+11. ★ ¿Cuántos productos (SKU) vende Prolac y cómo se agrupan? (leche, yogur, queso, mantequilla, manjar, postres, otros)
+12. ★ ¿Cuáles son los 10 productos más vendidos y los 10 de mayor margen?
+13. ★ ¿Qué presentaciones (tamaños, envases) y rangos de precio hay? ¿Existe una lista de precios en Excel o en el sistema que se pueda compartir?
+14. ★ ¿Qué vida útil tiene cada familia de productos y a qué temperatura debe conservarse?
+15. ¿Todos los productos son envasados con código de barras, o hay productos frescos, a granel o por peso (por ejemplo, queso cortado al momento)?
+16. ¿Hay productos de temporada o de edición limitada?
+17. ¿Hay combos, packs o canastas (desayuno, familiar, regalo)? ¿Se arman en tienda o ya están definidos?
+18. ★ ¿Cada producto tiene registro sanitario vigente? ¿Quién lo gestiona y dónde están los documentos?
+19. ¿Qué información incluye el etiquetado (información nutricional, advertencias, alérgenos, certificaciones)?
+20. ¿Tienes fotografías de producto? ¿Son profesionales y tienes los derechos?
+21. ¿Los productos tienen un código interno y código de barras (EAN) en el sistema?
+22. ¿Vendes también productos de terceros, o solo propios?
+23. ¿Vendes hoy a mayoristas, bodegas, restaurantes, colegios o empresas? ¿Con precios distintos?
+24. ¿Quieres vender todo el catálogo en línea desde el inicio o un subconjunto?
+25. ¿Qué productos NO se podrían enviar a domicilio por frescura o fragilidad?
+26. ¿Qué preguntas hacen los clientes sobre los productos (lactosa, recetas, usos, conservación)?
+27. ¿Qué productos tienen más devoluciones o mermas hoy?
+28. ¿Con qué frecuencia cambian los precios y quién los cambia?
+29. ¿Haces descuentos por cercanía al vencimiento? ¿Cómo los gestionas hoy?
+30. ★ ¿Te interesa vender por suscripción (por ejemplo, leche o yogur semanal)? ¿Qué productos?
 
-## 3. Clientes y mercado
-27. ★ ¿Quiénes son tus clientes hoy? (edad, perfil, trabajo, familias, estudiantes, oficinas, turistas)
-28. ★ ¿Quién quieres que sea tu cliente en la app? ¿Es el mismo perfil o uno nuevo?
-29. ¿Cuántos clientes distintos tienes al mes? ¿Cuántos son recurrentes?
-30. ¿Cuál es el ticket medio actual (por persona y por pedido)?
-31. ¿En qué momentos se vende más (días, horas, eventos, clima)? ¿Cuándo hay poca actividad?
-32. ¿Por qué te eligen? ¿Y por qué dejan de venir? ¿Tienes opiniones o reseñas que lo muestren?
-33. ¿Tienes una base de contactos (teléfono, email, WhatsApp, redes)? ¿Con consentimiento para contactarlos?
-34. ¿Qué idioma(s) hablan tus clientes? ¿Necesitas varios idiomas en la app?
-35. ¿Hay clientes con necesidades especiales (alergias graves, accesibilidad, personas mayores)?
-36. ¿Qué te piden que hoy no puedes ofrecer?
-37. ¿Qué quejas son las más comunes?
+## 3. Inventario y producción
+31. ★ ¿Qué sistema usas hoy para inventario, caja (POS) y facturación? (nombre, versión, si es en la nube o local, si tiene API o exportación)
+32. ★ ¿El stock de cada tienda se actualiza en tiempo real o por conteo o cierre diario?
+33. ★ ¿Cómo se abastecen las 6 tiendas desde las 2 plantas? (frecuencia, quién transporta, qué planta abastece a qué ciudad)
+34. ¿Cuál es la capacidad de producción diaria? ¿Pueden producir bajo pedido o con anticipación?
+35. ¿Existe un almacén o centro de distribución, o el stock está solo en plantas y tiendas?
+36. ★ ¿Desde dónde saldría cada pedido en línea? [ ] La tienda más cercana [ ] Un almacén central [ ] La planta [ ] Aún no lo sé
+37. ¿Quién alistaría los pedidos en tienda? ¿Tienen tiempo disponible o habría que contratar?
+38. ¿Cuánto stock reservarías para ventas en línea frente a la venta en mostrador?
+39. ¿Qué pasa hoy cuando un producto se agota en tienda?
+40. ¿Se controlan lotes y fechas de vencimiento en el sistema? ¿Se despacha primero lo que vence antes?
+41. ¿Qué porcentaje de producto se pierde por vencimiento o daño?
+42. ¿Cada tienda tiene cámara o refrigeradora con espacio para guardar pedidos listos?
+43. ¿Cuáles son los horarios de producción y de salida de producto de las plantas?
+44. ¿Quién actualiza hoy el catálogo y los precios en el sistema?
+45. ¿Cómo se concilian las ventas y el inventario entre tiendas y plantas?
 
-## 4. Operación de cocina
-38. ★ ¿Cuántos pedidos puede atender la cocina por hora en pico sin que baje la calidad? ¿Lo has medido?
-39. ★ ¿Cuántas personas trabajan en cocina por turno? ¿Cuáles son los horarios del servicio?
-40. ★ ¿Cuánto tarda en promedio preparar un pedido típico (desde que entra hasta que está listo)? ¿Y en hora pico?
-41. ¿Qué platos son cuello de botella (horno, plancha, preparación larga)?
-42. ¿La cocina atiende a la vez sala, mostrador, teléfono y plataformas? ¿Cómo se prioriza?
-43. ★ ¿Cómo recibes los pedidos hoy? (teléfono, WhatsApp, mostrador, plataformas, web) ¿En qué volumen cada uno?
-44. ¿Qué dispositivos hay en cocina? (tablet, impresora, pantalla, ordenador, nada)
-45. ¿Hay internet estable en cocina? ¿Qué pasa si se cae?
-46. ¿Quién aceptará y gestionará los pedidos online durante el servicio? ¿Tiene tiempo para ello?
-47. ¿Rechazas o pausas pedidos cuando estás saturado? ¿Cómo lo haces hoy?
-48. ¿Gestionas inventario? ¿Con qué sistema? ¿Quieres que la app lo conecte?
-49. ¿Cuál es el desperdicio actual? ¿Quieres usar la app para reducirlo (ofertas de última hora)?
-50. ¿Tienes un POS o sistema de caja? Marca, modelo y si tiene API o integraciones.
-51. ¿Hay procedimientos de calidad (temperatura, trazabilidad, limpieza) que la app debería registrar?
+## 4. Tiendas, ciudades y clientes
+46. ★ Lista de las 6 tiendas: ciudad, dirección, horarios, tamaño aproximado y personal.
+47. ★ ¿Qué ciudad lanzarías primero y por qué? [ ] Trujillo [ ] Chiclayo [ ] Lima
+48. ¿Cuántos clientes atiende cada tienda por día y cuál es el ticket medio?
+49. ★ ¿Quiénes son tus clientes principales? (hogares, bodegas, restaurantes, colegios, oficinas, otros)
+50. ¿Qué porcentaje de las compras es por impulso y cuál es planificada?
+51. ¿Con qué frecuencia compra un cliente típico? (diaria, semanal, quincenal)
+52. ¿Tienes una base de datos de clientes (teléfono, email, WhatsApp)? ¿Cuántos y con qué consentimiento?
+53. ¿Tienes tarjeta de cliente, puntos o descuentos por fidelidad?
+54. ¿Cuáles son las quejas más frecuentes de los clientes? (agotados, horarios, distancia, precio)
+55. ¿Qué te piden los clientes que hoy no puedes ofrecer?
+56. En Lima, ¿en qué distrito(s) están las tiendas?
+57. ¿Ya recibes pedidos por WhatsApp o teléfono? ¿Cuántos al día?
+58. ¿Tienes clientes institucionales o corporativos?
+59. ¿Qué perfil socioeconómico y rango de edad quieres alcanzar con la app?
+60. Aproximadamente, ¿qué porcentaje de tus clientes usa Android y cuál iPhone?
 
-## 5. Entrega y logística
-52. ★ ¿Qué modalidades quieres? [ ] Entrega a domicilio [ ] Recoger en el local [ ] Ambas [ ] Consumo en mesa con QR
-53. ★ ¿Quién hará el reparto? [ ] Repartidores propios (empleados) [ ] Autónomos propios [ ] Proveedor externo de last-mile [ ] Aún no lo sé
-54. ★ ¿Cuál es el radio de entrega deseado (km o minutos)? ¿Zonas concretas que quieres incluir o excluir?
-55. ★ ¿Cuántas entregas por hora podrías hacer con los repartidores disponibles?
-56. ¿Cuántos repartidores tienes o piensas tener? ¿En moto, bici, coche, a pie?
-57. ¿Qué tiempo de entrega prometes hoy? ¿Cuál es el máximo aceptable?
-58. ¿Cómo cobras la entrega? [ ] Gratis [ ] Tarifa fija [ ] Por zona [ ] Por distancia [ ] Gratis sobre un mínimo
-59. ¿Hay un pedido mínimo? ¿Cuál?
-60. ¿Qué pasa cuando el cliente no está, la dirección es errónea o hay un problema en el camino?
-61. ¿Entregas en puerta, en portería, en oficinas, en parques? ¿Necesitas instrucciones de acceso?
-62. ¿Quieres que el cliente vea al repartidor en el mapa en tiempo real, o basta con estados y tiempo estimado?
-63. ¿Cómo mantienes la temperatura y calidad de la comida en ruta? ¿Tienes mochilas térmicas?
-64. ¿Hay horarios o zonas donde no se puede repartir (tráfico, seguridad, restricciones municipales)?
-65. ¿Quieres programar pedidos para otro día/hora? ¿Con cuánta anticipación?
-66. ¿Cómo se gestionan las propinas para repartidores?
-67. ¿Existen proveedores de reparto externos en tu ciudad? ¿Los has cotizado?
+## 5. Entrega y cadena de frío
+61. ★ ¿Qué modalidades quieres ofrecer? [ ] Recojo en tienda [ ] Entrega a domicilio [ ] Ambas
+62. ★ ¿Quién repartirá? [ ] Repartidores propios [ ] Un proveedor externo (motos, courier, apps de delivery) [ ] Aún no lo sé
+63. ★ ¿Qué zonas o distritos atendería cada tienda, y en qué radio?
+64. ★ ¿Cuánto tiempo máximo puede estar un pedido fuera de refrigeración y a qué temperatura debe mantenerse? ¿Tienes termos, mochilas térmicas o geles?
+65. ¿Qué tipo de entrega quieres? [ ] En el día [ ] Al día siguiente [ ] Programada por franja horaria
+66. ¿Cuánto te cuesta repartir un pedido y cuánto cobrarías al cliente?
+67. ¿Habrá pedido mínimo? ¿Envío gratis a partir de qué monto?
+68. ¿Cuántos pedidos al día puede alistar y despachar una tienda sin afectar la atención en mostrador?
+69. ¿Qué se hace si el cliente no está o si el producto llega en mal estado?
+70. ¿Quieres mostrar al repartidor en un mapa o basta con estados del pedido?
+71. ¿Con qué vehículos cuentas? (moto, auto, furgoneta refrigerada, bicicleta)
+72. ¿Hay zonas con restricciones de acceso (condominios, edificios, zonas rurales) donde repartir es difícil?
+73. ¿Cuál es la política de cambios o devoluciones para productos perecibles?
+74. Si falta un producto al alistar, ¿se sustituye, se avisa al cliente o se cancela esa línea?
+75. En recojo en tienda, ¿cuánto tiempo se guarda el pedido y qué pasa si no lo recogen?
 
 ## 6. Canales actuales y competencia
-68. ★ ¿Estás hoy en Uber Eats, Rappi, Glovo, DiDi Food, PedidosYa u otras? ¿Qué porcentaje de tus ventas representan?
-69. ★ ¿Qué comisión pagas a cada plataforma? ¿Tienes datos de cuánto te cuesta al mes?
-70. ¿Piensas **dejar** las plataformas, **mantenerlas** o usarlas como canal de captación hacia tu app?
-71. ¿Tienes contratos con exclusividad o cláusulas de paridad de precios?
-72. ¿Tienes web, Instagram, Facebook, TikTok, Google Business? Enlaces y seguidores aproximados.
-73. ¿Vendes por WhatsApp o teléfono? ¿Cuántos pedidos al día?
-74. ¿Quiénes son tus 3 competidores directos en tu zona? ¿Qué hacen mejor y peor que tú?
-75. ¿Qué apps de comida te gustan o no te gustan como usuario y por qué?
-76. ¿Qué te gusta de Uber Eats que quieres conservar? ¿Qué NO quieres que se parezca?
-77. ¿Hay algún competidor con app propia en tu zona? ¿Cómo funciona?
+76. ★ ¿Vendes hoy en PedidosYa, Rappi, Mercado Libre, supermercados u otras plataformas? ¿Qué porcentaje de las ventas representan?
+77. ★ ¿Distribuyes a supermercados, bodegas o mayoristas? ¿Podría haber conflicto de precios entre esos canales y la app?
+78. ¿Qué comisión pagas a cada canal?
+79. ¿Tienes web, Facebook, Instagram, TikTok o Google Business? Enlaces y seguidores aproximados.
+80. ¿Qué marcas de lácteos y qué supermercados compiten contigo en tus ciudades?
+81. ¿Qué apps de compras o de comida te gustan como usuario y por qué?
+82. ¿Qué te gusta de Uber Eats que quieres conservar y qué NO quieres que se parezca?
+83. ¿Qué ventaja tiene Prolac frente a esos competidores?
+84. ¿Cómo comparan tus precios con los de supermercados y marcas competidoras?
 
-## 7. Objetivos y métricas de éxito
-78. ★ ¿Cuál es el objetivo principal de la app? Elige uno:
-   - [ ] Aumentar ventas  [ ] Reducir comisiones de plataformas  [ ] Fidelizar clientes  [ ] Ordenar la operación de pedidos  [ ] Construir marca  [ ] Abrir nuevos mercados  [ ] Otro: ___
-79. ★ ¿Cuántos pedidos online al día esperas en los primeros 3 meses? ¿Y al año?
-80. ★ ¿Qué porcentaje de las ventas quieres que venga de la app en 12 meses?
-81. ¿Qué nivel de ingresos mensuales por la app consideras éxito? ¿Y cuál mínimo para que valga la pena?
-82. ¿Cuánto estás dispuesto a invertir antes de ver resultados y por cuánto tiempo?
-83. ¿Cuáles son los 3 números que mirarías cada semana? (pedidos, ticket, recompra, tiempo de entrega, reseñas, margen)
-84. ¿Qué tendría que pasar en 6 meses para decir "esto funcionó"? ¿Y "esto fracasó"?
-85. ¿Cuál es el plazo en el que necesitas tener la app funcionando? ¿Hay una fecha fija (apertura, temporada, evento)?
-86. ¿Quieres ahorrar tiempo de personal, o crecer en ventas, o ambas?
+## 7. Objetivos y métricas
+85. ★ ¿Cuál es el objetivo principal de la app? [ ] Aumentar ventas [ ] Llegar a clientes de otras zonas [ ] Fidelizar y vender por recurrencia [ ] Reducir dependencia de otros canales [ ] Ordenar los pedidos [ ] Otro: ___
+86. ★ ¿Cuántos pedidos en línea al día esperas en los primeros 3 meses y cuánto en ventas mensuales?
+87. ★ ¿Qué porcentaje de las ventas totales quieres que provenga de la app dentro de 12 meses?
+88. ¿Cuánto estás dispuesto a invertir y en cuánto tiempo esperas recuperarlo?
+89. ¿Cuáles son los 3 números que mirarías cada semana?
+90. ¿Qué tendría que pasar en 6 meses para decir "funcionó"? ¿Y "fracasó"?
+91. ★ ¿Hay una fecha límite para lanzar? (campaña, temporada, apertura)
+92. ¿Quieres que las ventas en línea sean adicionales a las de tienda o aceptas que parte se traslade de tienda a app?
+93. ¿Piensas abrir nuevas tiendas o ciudades, o franquiciar?
 
-## 8. Visión de la app (funcionalidades)
-Marca para cada función: **M** = imprescindible, **D** = deseable, **N** = no la quiero, **?** = no sé.
+## 8. Funcionalidades
+94. ★ Marca cada función con **M** (imprescindible), **D** (deseable), **N** (no la quiero) o **?** (no sé):
 
-| Función | M / D / N / ? | Notas |
-|---------|---------------|-------|
-| Ver menú con fotos y alérgenos | | |
-| Personalizar platos (extras, quitar ingredientes) | | |
-| Pedir ahora | | |
-| Programar pedido para más tarde | | |
-| Entrega a domicilio | | |
-| Recoger en el local | | |
-| Consumo en mesa con QR | | |
-| Pagar con tarjeta en la app | | |
-| Pagar en efectivo/datáfono al recibir | | |
-| Billeteras (Apple/Google Pay, otras locales) | | |
-| Propina | | |
-| Códigos de descuento | | |
-| Programa de puntos/sellos | | |
-| Referidos ("invita y gana") | | |
-| Suscripción / club | | |
-| Volver a pedir en un toque | | |
-| Favoritos | | |
-| Seguimiento con estados | | |
-| Mapa con ubicación del repartidor | | |
-| Notificaciones push | | |
-| Mensajes por WhatsApp/SMS | | |
-| Reseñas y valoraciones | | |
-| Pedido grupal / compartido | | |
-| Pedidos para empresas (facturación, crédito) | | |
-| Panel de cocina en tablet | | |
-| Impresión de comandas | | |
-| Pausar pedidos / modo alta demanda | | |
-| Gestión de agotados en vivo | | |
-| App para repartidores | | |
-| Panel de analítica y ventas | | |
-| Gestión de campañas y promociones | | |
-| Programa de afiliados / influencers | | |
-| Tarjetas regalo | | |
-| Chat con el local | | |
-| Multi-idioma | | |
-| Multi-moneda | | |
-| Multi-local (preparado para crecer) | | |
-| Integración con POS / contabilidad | | |
-| Facturación electrónica | | |
+| Función | M / D / N / ? |
+|---------|---------------|
+| Catálogo con fotos, precios y presentaciones | |
+| Búsqueda y filtros (categoría, sin lactosa, deslactosado, light) | |
+| Ver disponibilidad por tienda | |
+| Elegir tienda de recojo | |
+| Recojo en tienda | |
+| Entrega a domicilio | |
+| Programar entrega por franja | |
+| Suscripción (entrega recurrente) | |
+| Volver a pedir en un toque | |
+| Favoritos y listas de compra | |
+| Packs y canastas | |
+| Promociones y cupones | |
+| Puntos o sellos de fidelidad | |
+| Referidos | |
+| Pago con tarjeta | |
+| Yape / Plin | |
+| Pago contra entrega en efectivo | |
+| Boleta o factura electrónica | |
+| Notificaciones push | |
+| Mensajes por WhatsApp | |
+| Seguimiento por estados | |
+| Mapa con el repartidor | |
+| Reseñas y valoraciones | |
+| Libro de Reclamaciones virtual | |
+| Pedidos para empresas (B2B) | |
+| Panel de tienda (alistar y despachar) | |
+| Impresión de ticket o etiqueta | |
+| App de repartidor | |
+| Panel de analítica y ventas | |
+| Multi-ciudad y multi-tienda | |
+| Tarjeta de regalo | |
 
-87. ★ De la lista, ¿cuáles 5 funciones son las que más importan para el lanzamiento?
-88. ¿Qué función NO necesitas al inicio aunque suene bien?
-89. ★ ¿Prefieres **app móvil nativa** (App Store / Google Play), **web instalable (PWA)**, o ambas? ¿Por qué?
-90. ¿Qué porcentaje de tus clientes usa iPhone vs. Android?
-91. ¿Quieres que se pueda pedir sin crear cuenta (invitado)?
-92. ¿Cómo quieres que se registren los clientes? [ ] Teléfono (OTP) [ ] Email [ ] Google/Apple [ ] Redes sociales
-93. ¿Qué datos del cliente necesitas pedir y cuáles no?
-94. ¿Hay algo que sueñes con que la app haga y que nadie hace en tu zona?
+95. ¿Qué función NO necesitas al inicio aunque suene bien?
+96. ★ ¿Prefieres app móvil en tiendas (App Store y Google Play), web instalable (PWA), o ambas?
+97. ¿Quieres que se pueda comprar sin crear cuenta?
+98. ¿Cómo quieres que se registren? [ ] Teléfono con código [ ] Email [ ] Google o Apple
+99. ¿Qué datos del cliente son imprescindibles (DNI o RUC para comprobante, dirección, teléfono) y cuáles no pedirías?
+100. ¿Hay algo que sueñes que la app haga y que nadie hace en tu zona?
 
-## 9. Marca, diseño y experiencia
-95. ★ ¿Tienes marca registrada, logo y guía de estilo? ¿Puedes compartirlos?
-96. ¿Cómo describirías la personalidad de la marca en 5 palabras? (p. ej. cálida, rápida, gourmet, familiar, irreverente)
-97. ¿Qué colores, tipografías o estilos te gustan o te disgustan?
-98. ¿Qué tono de voz quieres? [ ] Formal [ ] Cercano [ ] Divertido [ ] Premium [ ] Otro: ___
-99. ¿Qué 3 apps (de cualquier sector) tienen una experiencia que te gustaría igualar y por qué?
-100. ¿Qué sensación debe tener el cliente al abrir la app? ¿Y al recibir la comida?
-101. ¿Hay algo en el diseño de otras apps de comida que te molesta?
-102. ¿Quieres un seguimiento del pedido con personalidad propia (mensajes, ilustraciones, humor)?
-103. ¿Tienes fotos, videos, ilustraciones o mascota que podamos usar?
-104. ¿Hay requisitos de accesibilidad (daltonismo, lectores de pantalla, letra grande) que tus clientes necesiten?
-105. ¿Debe haber modo oscuro?
-106. ¿Qué texto o promesa debe aparecer en la pantalla principal? (tu frase de venta)
+## 9. Marca y diseño
+101. ★ ¿Prolac tiene logo, paleta de colores y guía de marca? ¿Puedes compartirlos? ¿Está registrada en Indecopi?
+102. ¿Cómo describirías la marca en 5 palabras?
+103. ¿Qué colores o estilos te gustan o te disgustan?
+104. ¿Qué tono quieres? [ ] Formal [ ] Cercano [ ] Familiar [ ] Premium [ ] Otro: ___
+105. ¿Qué 3 apps te gustaría igualar en experiencia y por qué?
+106. ¿Tienes fotos, videos o personajes de la marca que se puedan usar?
+107. ¿Tus clientes incluyen personas mayores o con baja experiencia digital? ¿Necesitas letra grande y pasos muy simples?
 
 ## 10. Pagos, precios y finanzas
-107. ★ ¿Qué métodos de pago usan tus clientes hoy? ¿Qué porcentaje es efectivo, tarjeta, transferencia, billeteras?
-108. ★ ¿Quieres aceptar efectivo en la entrega? ¿Cómo controlarías los riesgos (cambio, robos, no-show)?
-109. ¿Tienes ya cuenta con alguna pasarela de pago (Stripe, MercadoPago, Adyen, otra)? ¿Qué comisión te cobran?
-110. ★ ¿Los precios online serán iguales a los del local, más bajos (para incentivar pedir directo) o más altos?
-111. ¿Cuál es tu margen aproximado por plato o por pedido (después de comida, packaging y reparto)?
-112. ¿Cuál es el coste actual de un pedido entregado (comida + empaque + reparto + comisiones)?
-113. ¿Cuánto puedes gastar en adquirir un cliente nuevo y que aún sea rentable?
-114. ¿Cuánto quieres cobrar por entrega? ¿Subvencionarás envíos para ganar clientes?
-115. ¿Habrá descuentos de bienvenida, códigos o promociones? ¿Con qué tope de presupuesto?
-116. ¿Impuestos incluidos en el precio o añadidos? ¿Qué tasa/s aplican?
-117. ¿Qué política de cancelación y reembolso quieres? ¿Hasta qué momento puede cancelar el cliente?
-118. ¿Quién gestiona los reembolsos y reclamos, y con qué autonomía (monto máximo sin aprobación)?
-119. ¿Cómo liquidas y concilias hoy (contabilidad, contador, sistema)?
-120. ¿Necesitas facturas por pedido? ¿Con qué datos fiscales del cliente?
+108. ★ ¿Qué métodos de pago usan tus clientes hoy y en qué porcentaje? (efectivo, tarjeta, Yape/Plin, transferencia)
+109. ★ ¿Aceptarías efectivo contra entrega? ¿Cómo controlarías el cambio y los pedidos no recibidos?
+110. ¿Ya tienes contrato con una pasarela o adquirente (Niubiz, Izipay, Culqi u otro)? ¿Qué comisión pagas?
+111. ★ ¿Los precios en línea serán iguales a los de tienda, menores o mayores?
+112. ¿Cuál es el margen aproximado por categoría de producto?
+113. ¿Cuánto te cuesta entregar un pedido (reparto, empaque térmico, merma)?
+114. ¿Cuánto puedes gastar en conseguir un cliente nuevo y que siga siendo rentable?
+115. ¿Qué descuentos o promociones usarías y con qué tope de presupuesto?
+116. ¿Tus precios al público ya incluyen IGV? ¿Hay productos con tratamiento distinto?
+117. ★ ¿Cómo emites hoy boletas y facturas electrónicas y con qué sistema o proveedor? ¿Quién lo gestiona?
+118. ¿Cuál es tu política de cancelación y reembolso?
+119. ¿Quién atenderá reclamos y reembolsos y hasta qué monto puede resolver sin consultar?
+120. ¿Cómo llevas hoy la contabilidad (contador externo, sistema)?
 
 ## 11. Legal, fiscal y sanitario
-121. ★ ¿Qué licencias sanitarias, comerciales y de transporte de alimentos tienes? ¿Cubren el reparto?
-122. ¿Quién es el responsable legal del negocio (razón social, NIF/RFC/RUT/CUIT)?
-123. ¿Ya tienes términos y condiciones, política de privacidad y de cancelación? ¿Los redactó un abogado?
-124. ¿Recopilas datos de clientes hoy? ¿Con qué consentimiento?
-125. ★ ¿Cómo se regula el reparto propio en tu país (empleado vs. autónomo)? ¿Has consultado a un asesor?
-126. ¿Tienes seguros (responsabilidad civil, accidentes de repartidores, intoxicación alimentaria)?
-127. ¿Se exige facturación electrónica o equipos fiscales en tu zona?
-128. ¿Hay restricciones sobre alcohol, menores, publicidad o promociones?
-129. ¿Quién resolvería un incidente grave (intoxicación, alergia, accidente de reparto)? ¿Hay protocolo?
+121. ★ ¿Qué autorizaciones sanitarias y municipales tienen plantas y tiendas (habilitación sanitaria, HACCP, licencias de funcionamiento)?
+122. ¿Cuál es la razón social y el RUC?
+123. ¿Tienes términos y condiciones, política de privacidad y Libro de Reclamaciones? ¿Quién los redactó?
+124. ¿Qué datos de clientes recopilas hoy y con qué consentimiento?
+125. Si el reparto es propio, ¿has consultado cómo regular a los repartidores (planilla o independientes)?
+126. ¿Tienes seguros que cubran responsabilidad civil, accidentes de reparto o problemas de inocuidad?
+127. ¿Existe un protocolo de retiro de lotes o manejo de incidentes de inocuidad? ¿Quién lo ejecuta?
+128. ¿Hay restricciones municipales de reparto, horarios o publicidad en tus ciudades?
 
 ## 12. Equipo, presupuesto y plazos
-130. ★ ¿Cuál es el presupuesto total disponible para construir (rango) y para operar al mes?
-131. ★ ¿Quién construirá la app? [ ] Yo/nuestro equipo [ ] Agencia [ ] Freelancers [ ] Herramienta low-code [ ] Aún no lo sé
-132. ¿Hay personas técnicas en el equipo? ¿Qué saben hacer?
-133. ¿Quién será el "dueño del producto" (decide prioridades y responde dudas rápido)?
-134. ¿Cuánto tiempo semanal puede dedicar esa persona?
-135. ¿Hay preferencias o rechazos de tecnología (lenguajes, plataformas, proveedores)?
-136. ¿Prefieres pagar por mes (SaaS) o construir algo propio con costos únicos? ¿Por qué?
-137. ¿Quién dará soporte y mantenimiento después del lanzamiento?
-138. ¿Qué tolerancia tienes a que el primer lanzamiento sea simple y mejore por etapas?
-139. ¿Hay socios o inversores a quienes rendir cuentas? ¿Qué esperan ver?
+129. ★ ¿Qué presupuesto tienes para construir (rango) y cuánto al mes para operar (hosting, comisiones, marketing, soporte)?
+130. ★ Ya indicaste que lo desarrollaremos juntos. ¿Quién operará y mantendrá la app después del lanzamiento y quién tendrá acceso a las cuentas (repositorio, dominio, tiendas de apps)?
+131. ¿Hay personas técnicas en el equipo? ¿Qué saben hacer?
+132. ¿Quién será el responsable del producto día a día y cuánto tiempo semanal puede dedicar?
+133. ¿Hay preferencias o rechazos de tecnología o proveedores?
+134. ¿Prefieres pagar mensualmente por servicios o tener sistema propio con costos únicos?
+135. ¿Quién dará soporte técnico y a clientes tras el lanzamiento?
+136. ¿Aceptas un primer lanzamiento simple que mejore por etapas?
+137. ¿Hay socios o inversores a quienes rendir cuentas?
+138. ¿Tienes cuentas de desarrollador de Apple y Google, y dominio propio?
 
 ## 13. Tecnología y datos existentes
-140. ¿Qué sistemas usas hoy? (POS, contabilidad, CRM, Excel, impresoras, correo, WhatsApp Business)
-141. ¿Tienes datos históricos de ventas? ¿En qué formato y desde cuándo?
-142. ¿Tienes sitio web? ¿En qué plataforma está (Wix, Shopify, WordPress, a medida)? ¿Quién lo mantiene?
-143. ¿Tienes dominio, cuentas de Google/Apple Developer, perfil de Google Business?
-144. ¿Qué dispositivos usan en el local (modelo de tablets, impresoras, ordenadores)?
-145. ¿Qué calidad de internet y de cobertura móvil hay en tu zona?
-146. ¿Hay requisitos de integración obligatorios (POS, facturación, contabilidad)?
-147. ¿Cuánta dependencia de un solo proveedor es aceptable?
-148. ¿Qué haces con los datos de clientes hoy (listas, hojas, cuadernos)?
-149. ¿Hay algún sistema que quieras reemplazar y algún otro que no se pueda tocar?
+139. ¿Qué otros sistemas usas además del POS? (contabilidad, CRM, Excel, WhatsApp Business)
+140. ¿Tienes datos históricos de ventas por producto y por tienda? ¿Desde cuándo y en qué formato?
+141. ¿Tienes sitio web? ¿En qué plataforma y quién lo mantiene?
+142. ¿Qué equipos hay en tienda (computadoras, tablets, impresoras de tickets, lectores de código de barras)?
+143. ¿Cómo es la conexión a internet en tiendas y plantas?
+144. ¿Hay integraciones obligatorias (facturación, contabilidad, ERP)?
+145. ¿Qué haces hoy con los datos de clientes (listas, hojas de cálculo)?
+146. ¿Hay algún sistema que quieras reemplazar y otro que no se pueda tocar?
 
-## 14. Marketing, fidelización y crecimiento
-150. ★ ¿Cómo piensas conseguir los primeros 100 clientes de la app?
-151. ¿Cuál es tu presupuesto mensual de marketing?
-152. ¿Qué canales funcionan hoy (boca a boca, Instagram, Google, volantes, alianzas, oficinas)?
-153. ¿Tienes alianzas posibles (oficinas, gimnasios, colegios, hoteles, coworkings, eventos)?
-154. ¿Qué incentivo usarías para pasar a los clientes de plataformas a tu app (cupón en bolsa, QR, envío gratis)?
-155. ¿Quieres un programa de fidelización? ¿Puntos, sellos, niveles, regalos de cumpleaños?
-156. ¿Quieres referidos? ¿Qué recompensa podrías ofrecer?
-157. ¿Contarás con influencers o creadores locales?
-158. ¿Cómo manejarás reseñas negativas?
-159. ¿Qué mensajes automáticos enviarías (bienvenida, recordatorio de recompra, cumpleaños, recuperación de carrito)? ¿Con qué frecuencia máxima?
-160. ¿Quieres atribuir ventas por canal (de dónde llegó cada cliente)?
-161. ¿Piensas vender a empresas (comida para oficinas, eventos)?
+## 14. Marketing y fidelización
+147. ★ ¿Cómo piensas conseguir tus primeros 100 clientes en la app?
+148. ¿Cuál es tu presupuesto mensual de marketing?
+149. ¿Qué canales te funcionan hoy? (boca a boca, redes, volantes, radio, alianzas)
+150. ¿Hay alianzas posibles (colegios, gimnasios, oficinas, mercados, bodegas)?
+151. ¿Qué incentivo usarías para que los clientes de tienda pasen a la app? (cupón en el ticket, QR en tienda, descuento de bienvenida)
+152. ¿Quieres un programa de puntos o sellos?
+153. ¿Quieres referidos? ¿Qué recompensa podrías ofrecer?
+154. ¿Qué mensajes automáticos enviarías? (recordatorio de recompra, producto vuelve a estar disponible, promoción)
+155. ¿Venderás a empresas, colegios o instituciones por la app?
 
-## 15. Riesgos, restricciones y no-negociables
-162. ★ ¿Qué es lo que **no puede** fallar? (por ejemplo: que no se pierda un pedido, que no se cobre dos veces, que no haya error de alérgenos)
-163. ¿Qué te preocupa más del proyecto? (costo, tiempo, adopción, calidad, operación, dependencia de terceros)
-164. ¿Qué ha salido mal antes en proyectos tecnológicos o de plataformas?
-165. ¿Hay algo que **nunca** harías (vender datos, subir precios, usar ciertos proveedores, etc.)?
-166. ¿Qué supuestos estás haciendo que aún no has verificado? (p. ej. "mis clientes querrán pedir por app")
-167. ¿Qué pasaría si en los primeros 3 meses hay poca demanda? ¿Cuál es tu plan B?
-168. ¿Qué pasaría si de golpe llegan 5 veces más pedidos de los que la cocina puede hacer?
-169. ¿Qué pasaría si falla internet, el sistema de pago o el repartidor no llega?
-170. ¿Hay restricciones de privacidad o seguridad especiales (clientes sensibles, datos de menores)?
+## 15. Riesgos y no-negociables
+156. ★ ¿Qué es lo que **no puede** fallar? (por ejemplo: producto en mal estado, cobro doble, venta de producto agotado)
+157. ¿Qué te preocupa más del proyecto?
+158. ¿Qué ha salido mal antes en proyectos tecnológicos o con plataformas?
+159. ¿Hay algo que nunca harías?
+160. ¿Qué supuestos estás haciendo que aún no verificaste? (por ejemplo: "mis clientes querrán pedir por app")
+161. ¿Qué plan B tienes si en 3 meses hay poca demanda?
+162. ¿Qué pasaría si de golpe llegan muchos más pedidos de los que la tienda puede alistar?
+163. ¿Qué pasaría si falla internet, el sistema de pago, el repartidor o la refrigeración?
 
-## 16. Cierre: prioridades y decisión
-171. ★ Si solo pudieras lanzar **una** cosa en 8 semanas, ¿cuál sería?
-172. ★ Ordena de 1 a 5 qué es más importante: **Velocidad de lanzamiento / Bajo costo / Calidad de experiencia / Control y propiedad de datos / Capacidad de crecer**.
-173. ¿Prefieres validar primero con una solución simple (low-code, WhatsApp + formulario) o construir directamente a medida?
-174. ¿Qué información adicional quieres que investigue antes de decidir (competidores locales, proveedores de reparto, pasarelas, normativa)?
-175. ¿Qué decisiones necesitas tomar tú y cuáles prefieres que te recomiende yo?
-176. ¿Hay algo que no te pregunté y deberías contarme?
+## 16. Cierre
+164. ★ Si solo pudieras lanzar una cosa en 8 semanas, ¿cuál sería?
+165. ★ Ordena de 1 a 5 qué es más importante: **velocidad de lanzamiento / bajo costo / calidad de experiencia / control de tus datos / capacidad de crecer**.
+166. ¿Prefieres validar primero con una solución simple (por ejemplo, catálogo y pedido por WhatsApp o una tienda en plataforma) o construir directamente a medida?
+167. ¿Qué información adicional quieres que investigue antes de decidir? (proveedores de reparto, pasarelas, normativa, competencia)
+168. ¿Qué decisiones quieres tomar tú y cuáles prefieres que te recomiende yo?
+169. ¿Hay algo que no te pregunté y deberías contarme?
 
 ---
 
 ## Cómo usaré tus respuestas
 | Bloque | Decide |
 |--------|--------|
-| 1, 2, 3 | Posicionamiento, estructura del menú y público (`09`) |
-| 4, 5 | Modelo de capacidad, franjas, cálculo del tiempo estimado y estrategia de reparto (`05`, `06`) |
-| 6, 10 | Modelo de negocio, precios y rentabilidad por pedido (`04`) |
-| 7, 16 | Metas, métricas y prioridad del MVP (`10`) |
+| 2, 3 | Catálogo inicial, modelo de inventario y origen de pedidos (`13` §3, §5) |
+| 4 | Ciudad piloto, zonas y perfil de cliente |
+| 5 | Modelo de reparto, ventana de frío y tarifas (`13` §4) |
+| 6, 10 | Precios, márgenes, canales y conflicto de canal (`04`) |
+| 7, 15, 16 | Metas, prioridades y MVP (`10`, `13` §8) |
 | 8, 9 | Alcance funcional y diseño (`02`, `03`) |
-| 11 | Requisitos legales, alérgenos y fiscales (`08`) |
+| 11 | Cumplimiento en Perú (`13` §7, `08`) |
 | 12, 13 | Stack, integraciones y low-code vs. a medida (`05`, `07`) |
-| 14 | Plan de adquisición y fidelización (`04`, `10`) |
-| 15 | Riesgos y decisiones de diseño defensivo (`05`, `10`) |
-
-Con las ★ respondidas puedo producir en una pasada: (1) recomendación low-code vs. a medida, (2) alcance del MVP con tiempo y costo orientativos, y (3) la lista de decisiones que seguirían abiertas.
+| 14 | Plan de adquisición y fidelización |

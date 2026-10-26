@@ -1,5 +1,7 @@
 # 00 · Resumen ejecutivo
 
+> **Actualización (etapa 2):** el negocio real es **Prolac**, fabricante-minorista de **lácteos** con 6 tiendas y 2 plantas en Trujillo, Chiclayo y Lima (Perú). Este resumen y los documentos `02`–`10` se escribieron asumiendo un restaurante de comida preparada. Donde haya diferencias, **prevalece `13-adaptacion-prolac.md`**. Las respuestas del propietario están en `12-respuestas-descubrimiento.md`. Lo que sigue siendo válido de este resumen: el análisis de Uber Eats (secciones 1–3), la recomendación de monolito modular y la conclusión de que los patrones se inspiran, no se clonan. Lo que cambia: el riesgo central ya no es la cocina sino **la verdad del inventario y la cadena de frío**.
+
 > Dossier de ingeniería inversa **de producto, UX, negocio y arquitectura** de Uber Eats, orientado a diseñar una app de venta online de alimentos para **un solo negocio** (no marketplace), *inspirada* en ella y no clonada.
 
 ## 1. Qué es Uber Eats, en una frase

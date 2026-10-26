@@ -1,5 +1,7 @@
 # 04 · Modelo de negocio
 
+> **Nota (etapa 2):** la comparación "marketplace vs. canal propio" aplica solo en parte. Prolac es fabricante-minorista: el margen es de **producto propio** y el costo clave es la **última milla con frío**. La plantilla de unit economics sirve si se cambia "coste de comida" por "costo de producción/transferencia" y se añade merma por vencimiento. Ver `13-adaptacion-prolac.md`.
+
 ## 1. Cómo gana dinero Uber Eats (fuentes B/C; cifras no verificadas)
 | Línea | Mecánica | Comentario |
 |-------|----------|------------|

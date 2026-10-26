@@ -1,5 +1,7 @@
 # 10 · Roadmap y MVP
 
+> **Nota (etapa 2):** escrito para un solo local de comida preparada. Para Prolac el MVP es un **piloto en una ciudad** con recojo en tienda y entrega acotada con frío (hipótesis en `13-adaptacion-prolac.md` §8). Las decisiones abiertas 1–3 de §5 ya tienen respuesta (país: Perú; tipo de negocio: lácteos; ciudades: Trujillo, Chiclayo y Lima); las demás siguen abiertas y están en `11-cuestionario-descubrimiento.md`.
+
 ## 1. Supuestos
 Un local, radio de entrega acotado, equipo pequeño (2–4 personas de producto/ingeniería/diseño), 8–10 semanas para MVP. Los plazos son estimaciones orientativas.
 

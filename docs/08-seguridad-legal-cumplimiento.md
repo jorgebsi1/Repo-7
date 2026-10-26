@@ -1,5 +1,7 @@
 # 08 · Seguridad, legal y cumplimiento
 
+> **Nota (etapa 2):** la sección de seguridad técnica sigue vigente. Las secciones de privacidad, alimentos, fiscal y laboral son **genéricas**; para Prolac aplica la normativa peruana (Libro de Reclamaciones virtual, registro sanitario DIGESA, reglamento de lácteos, comprobantes electrónicos, protección de datos). El estado de verificación está en `13-adaptacion-prolac.md` §7. Nada de esto es asesoría legal.
+
 > Orientación general, **no asesoría legal**. Validar con un abogado y un contador del país de operación.
 
 ## 1. Seguridad técnica

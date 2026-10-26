@@ -1,5 +1,7 @@
 # 07 · Integraciones
 
+> **Nota (etapa 2):** para Perú, los proveedores concretos a cotizar son adquirentes como Niubiz, Izipay o Culqi y las billeteras Yape y Plin (comisiones sin verificar), más un proveedor de facturación electrónica (por confirmar con el contador) y la integración con el POS/ERP actual. Ver `13-adaptacion-prolac.md` §3 y §7.
+
 ## 1. Mapa
 | Dominio | Qué resuelve | Opciones | Criterio de elección |
 |---------|--------------|----------|----------------------|

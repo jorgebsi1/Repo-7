@@ -1,5 +1,7 @@
 # 05 · Arquitectura: referencia (Uber) y propuesta
 
+> **Nota (etapa 2):** la parte "Lo que se sabe de Uber" (§1) sigue vigente. La descomposición modular, el cálculo de ETA por carga de cocina y el "cuello de botella de cocina" (§2–§4) se escribieron para un restaurante y **se reemplazan** por los módulos, bucles y riesgos de `13-adaptacion-prolac.md` (inventario por ubicación y lote, capa anticorrupción con el POS/ERP, cadena de frío). El stack (§5) sigue siendo una buena base.
+
 ## 1. Lo que se sabe de Uber (y su fiabilidad)
 | Tema | Dato | Nivel |
 |------|------|-------|

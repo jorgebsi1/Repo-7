@@ -1,5 +1,7 @@
 # 06 · Modelo de datos, estados y API
 
+> **Nota (etapa 2):** el modelo y la máquina de estados están pensados para comida preparada. Para Prolac, la entidad `LOCAL` pasa a `UBICACION` (planta o tienda), `ITEM` a `PRODUCTO/SKU`, se añaden `STOCK` por ubicación y lote con vencimiento, `RESERVA_STOCK` con TTL, y los estados de pedido cambian (ver el diagrama en `13-adaptacion-prolac.md` §4). Los principios (dinero en enteros, precios congelados, idempotencia, eventos, outbox) siguen vigentes.
+
 ## 1. Entidades principales
 ```mermaid
 erDiagram
