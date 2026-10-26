@@ -21,6 +21,7 @@ export const STORE_ACTIONS: Record<string, OrderEvent> = {
   'vencer-recojo': 'vencer_recojo',
   'fallar-entrega': 'fallar_entrega',
   reembolsar: 'reembolsar',
+  cancelar: 'cancelar',
 };
 
 @Injectable()

@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import "@prolac/ui-tokens/tokens.css";
+
+@theme inline {
+  --color-brand: var(--prolac-brand);
+  --color-brand-strong: var(--prolac-brand-strong);
+  --color-brand-soft: var(--prolac-brand-soft);
+  --color-accent: var(--prolac-accent);
+  --color-surface: var(--prolac-surface);
+  --color-muted: var(--prolac-surface-muted);
+  --color-line: var(--prolac-border);
+  --color-ink: var(--prolac-text);
+  --color-ink-soft: var(--prolac-text-muted);
+  --color-ok: var(--prolac-success);
+  --color-warn: var(--prolac-warning);
+  --color-bad: var(--prolac-danger);
+  --radius-card: var(--prolac-radius-card);
+  --radius-control: var(--prolac-radius-control);
+  --font-sans: var(--prolac-font);
+}
+
+html {
+  color-scheme: light dark;
+}
+body {
+  background: var(--prolac-surface-muted);
+  color: var(--prolac-text);
+  font-family: var(--prolac-font);
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+a {
+  touch-action: manipulation;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+:focus-visible {
+  outline: 3px solid var(--prolac-brand);
+  outline-offset: 2px;
+}

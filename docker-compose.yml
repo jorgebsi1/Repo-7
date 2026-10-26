@@ -1,4 +1,5 @@
-# Opcional: Postgres y Redis reales. Para desarrollo basta `pnpm dev` (usa PGlite).
+# Opcional: Postgres real. Para desarrollo basta `pnpm dev` (usa PGlite, sin Docker).
+# Redis se añadirá cuando haya colas o caché que lo justifiquen (hoy el código no lo usa).
 services:
   postgres:
     image: postgres:16
@@ -8,8 +9,5 @@ services:
       POSTGRES_DB: prolac
     ports: ["5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data"]
-  redis:
-    image: redis:7
-    ports: ["6379:6379"]
 volumes:
   pgdata:

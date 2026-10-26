@@ -1,3 +1,4 @@
+import http from 'node:http';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { lote } from '../src/db/schema';
@@ -261,6 +262,41 @@ describe('API de pedidos (e2e, PGlite en memoria)', () => {
     await t.api().put('/v1/carrito').set(auth(cliente)).send({ ubicacionId: cat.tiendaId, items: [{ skuId: leche().id, cantidad: 4 }] }).expect(200);
     const c = (await t.api().get('/v1/carrito').set(auth(cliente)).expect(200)).body;
     expect(c.items).toEqual([{ skuId: leche().id, cantidad: 4 }]);
+  });
+
+
+  it('reserva de stock: apartada mientras se paga, y vuelve a estar disponible al caducar', async () => {
+    const s = cat.bySku('MAN-SAL-200');
+    await t.handle.db.update(lote).set({ cantidadDisponible: 2 }).where(eq(lote.skuId, s.id));
+    // Pago rechazado: el pedido queda sin pagar pero con 2 unidades apartadas (10 min).
+    await crearPedido({ lineas: [{ skuId: s.id, cantidad: 2 }], pago: { token: 'tok_rechazo' } }).expect(201);
+    const bloqueado = await crearPedido({ lineas: [{ skuId: s.id, cantidad: 1 }] }).expect(409);
+    expect(['SIN_STOCK', 'PRODUCTO_NO_DISPONIBLE']).toContain(bloqueado.body.code);
+    // Pasan 11 minutos: la reserva caducó y otro cliente puede comprar.
+    t.clock.set(new Date(t.clock.now().getTime() + 11 * 60_000));
+    await crearPedido({ lineas: [{ skuId: s.id, cantidad: 1 }] }, otro).expect(201);
+  });
+
+  it('canal en vivo (SSE): la tienda recibe el cambio de estado sin recargar', async () => {
+    const p = (await crearPedido({ lineas: [{ skuId: leche().id, cantidad: 1 }] }).expect(201)).body.pedido;
+    await t.app.listen(0);
+    const { port } = t.app.getHttpServer().address() as { port: number };
+    const recibido = new Promise<string>((resolve, reject) => {
+      const req = http.get(`http://127.0.0.1:${port}/v1/tienda/stream?token=${encodeURIComponent(tienda)}`, (res) => {
+        res.setEncoding('utf8');
+        res.on('data', (chunk: string) => {
+          if (chunk.includes('"estado":"ALISTANDO"')) {
+            req.destroy();
+            resolve(chunk);
+          }
+        });
+      });
+      req.on('error', (e) => (e as NodeJS.ErrnoException).code === 'ECONNRESET' ? undefined : reject(e));
+      setTimeout(() => reject(new Error('SSE: no llegó el evento')), 8000);
+    });
+    await new Promise((r) => setTimeout(r, 300)); // da tiempo a abrir el canal
+    await accion(p.id, 'iniciar-alistado').expect(201);
+    expect(await recibido).toContain(p.id);
   });
 
   it('healthcheck', async () => {

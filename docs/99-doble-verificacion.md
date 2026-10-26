@@ -70,3 +70,46 @@ Documentación alineada con el negocio real. Siguen sin existir código ni scaff
 - Sin confirmar: requisitos de cadena de frío en venta online, comprobantes electrónicos SUNAT, Ley 29733 de datos personales, cobertura actual de apps de reparto en Trujillo y Chiclayo.
 - `02`–`10` conservan su texto original con una nota al inicio; no se reescribieron por completo. Quien lea una sección debe leer también la nota y `13`.
 - Las hipótesis de MVP (ciudad piloto, recojo en tienda, captura del pago al empacar) dependen de respuestas aún pendientes.
+
+---
+
+# Etapa 3 · Esqueleto de Prolac ("la estructura del edificio")
+
+## 1. Qué hicimos
+- **3A Cimientos:** monorepo pnpm; `packages/domain` (máquina de estados, precios por pack y por peso con margen de autorización, FEFO, reservas con caducidad, zonas de reparto, ventana de frío, efectos de pago); esquema Drizzle con 16 tablas y migración; datos de muestra ficticios; importador de catálogo CSV.
+- **3B Estructura:** API NestJS con catálogo, inventario, carrito, pedidos (única dueña del estado), pagos simulados, panel de tienda (alistar, pesar, faltantes, empacar, despachar), entrega, cuentas de desarrollo y notificaciones simuladas.
+- **3C Fachada:** app del cliente (PWA) y panel de tienda con los patrones de Uber Eats y identidad propia provisional (`packages/ui-tokens`).
+- Cierre: `README.md`, `14-arquitectura-del-esqueleto.md`, respuestas de la tanda 2 en `12`.
+
+## 2. Dónde estamos
+Hay un esqueleto que funciona de punta a punta con datos ficticios: un cliente compra queso por peso y leche envasada, la tienda alista, pesa 430 g en lugar de 450 g, empaca y entrega; al cliente se le cobra el total real (S/ 28.48 en vez de S/ 29.20 estimado). No hay catálogo, precios ni fotos reales, ni pagos reales, ni facturación.
+
+## 3. Adónde vamos
+1. Responder las preguntas estructurales del cuestionario (31, 32, 33, 36, 46, 47, 61, 62, 63, 64): sistema de inventario/POS, origen de pedidos, ciudad piloto, reparto y frío.
+2. Con esas respuestas: integración con el POS/ERP, pasarela de pago y facturación (todas hoy son interfaces o simulaciones).
+3. Acabados: catálogo real por CSV, fotografía, marca, textos, mapa, notificaciones reales, Libro de Reclamaciones.
+
+## 4. Checklist verificado
+| Verificación | Resultado |
+|--------------|-----------|
+| Dominio: 35 pruebas en verde; sin imports de frameworks | ✅ |
+| API: 27 pruebas en verde con PGlite (importador, flujo, pesaje, faltantes, idempotencia, pago rechazado, cancelación, permisos, zonas, vida útil, caducidad de reserva, SSE) | ✅ |
+| Los 23 e2e de pedidos contra **PostgreSQL 17 real** (instancia temporal, sin Docker) | ✅ |
+| Ninguna transición fuera de la máquina de estados; el rol sin permiso recibe 403 y el estado incorrecto 409 | ✅ |
+| El cliente no puede fijar precios (campos extra → 400; total calculado en servidor) | ✅ |
+| Idempotencia: misma clave no duplica pedido ni cobro | ✅ |
+| `pnpm typecheck` y `pnpm build` (paquetes, API y Next.js) sin errores | ✅ |
+| Recorrido real en Chromium (cliente 390 px + panel 1024 px): compra, pesaje, empaque, entrega y vista final del cliente, sin errores de JavaScript | ✅ |
+| Capturas revisadas a ojo: se detectó y corrigió un desborde del conmutador Recojo/Entrega en móvil | ✅ (tras corregir) |
+| `pnpm dev` levanta API y web sin Docker con datos de muestra | ✅ |
+| Los diagramas Mermaid (incluido el nuevo de `14`) pasan `mermaid.parse` | ✅ |
+| Datos ficticios marcados `[DEMO]`; lo provisional documentado en `14` §5 | ✅ |
+
+## 5. Huecos y limitaciones conocidas
+- **Estética:** se aplicaron los patrones de interacción de Uber Eats, no su aspecto exacto; los tokens son neutros y provisionales. La identidad final depende de la marca de Prolac (pregunta 101).
+- **Docker no estaba disponible** en el entorno: `docker-compose.yml` no se ejecutó (sí se probó contra un Postgres 17 temporal).
+- **No verificado:** instalación de la PWA en un teléfono real, rendimiento con muchos pedidos, accesibilidad con lector de pantalla, modo sin conexión, y pruebas con usuarios reales.
+- **Inventario:** la integración con el POS/ERP es una interfaz pendiente; sin saber qué sistema usan hay riesgo de doble fuente de verdad (ver `13` §5).
+- **Pendientes técnicos conocidos:** nada programa la liberación de reservas vencidas ni la cancelación de pedidos con pago fallido; OpenAPI sin esquemas de cuerpo; login de desarrollo.
+- **Legal:** nada nuevo se verificó; siguen vigentes los pendientes de `13` §7 (cadena de frío, SUNAT, Ley 29733, Libro de Reclamaciones).
+- Se usó Drizzle y no Prisma (ver `14` §4).

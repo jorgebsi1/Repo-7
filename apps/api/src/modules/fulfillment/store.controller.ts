@@ -59,7 +59,7 @@ export class StoreController {
     return this.fulfillment.markMissing(user, id, lineaId, parse(missingSchema, body ?? {}).motivo);
   }
 
-  /** Acciones del pedido: iniciar-alistado, resolver-faltante, reembolsar-por-faltante, empacar, dejar-listo, despachar, entregar, vencer-recojo, fallar-entrega, reembolsar. */
+  /** Acciones del pedido: iniciar-alistado, resolver-faltante, reembolsar-por-faltante, empacar, dejar-listo, despachar, entregar, vencer-recojo, fallar-entrega, reembolsar, cancelar. */
   @Post('pedidos/:id/:accion')
   act(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Param('accion') accion: string) {
     return this.fulfillment.act(user, id, accion);

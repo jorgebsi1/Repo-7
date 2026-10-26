@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { Pool } from 'pg';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { openDb, type DbHandle } from '../src/db/client';
@@ -17,7 +18,14 @@ export interface TestApp {
 export async function bootApp(config?: Partial<BusinessConfig>): Promise<TestApp> {
   let current = new Date('2026-03-10T15:00:00Z');
   const clock = { now: () => new Date(current), set: (d: Date) => (current = d) };
-  const handle = await openDb({});
+  // Con TEST_DATABASE_URL las pruebas corren contra Postgres real (se vacía el esquema antes); si no, PGlite en memoria.
+  const url = process.env.TEST_DATABASE_URL;
+  if (url) {
+    const pool = new Pool({ connectionString: url });
+    await pool.query('drop schema if exists public cascade; drop schema if exists drizzle cascade; create schema public;');
+    await pool.end();
+  }
+  const handle = await openDb(url ? { databaseUrl: url } : {});
   await seedDemo(handle.db, clock.now());
   const moduleRef = await Test.createTestingModule({ imports: [AppModule.register({ db: handle, clock, config })] }).compile();
   const app = moduleRef.createNestApplication();
