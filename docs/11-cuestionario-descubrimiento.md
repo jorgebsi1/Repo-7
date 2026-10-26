@@ -4,7 +4,7 @@ Objetivo: saber **quiénes somos, qué hacemos y qué queremos** para la app, y 
 
 ## Cómo usarlo
 - Responde debajo de cada pregunta. Si no lo sabes, escribe **"No sé"**: también es información útil.
-- **★ = crítica**: cambia el diseño o el stack. Si solo tienes tiempo para unas pocas, responde las ★ primero (son ~30).
+- **★ = crítica**: cambia el diseño o el stack. Si solo tienes tiempo para unas pocas, responde las ★ primero (son 37).
 - Puedes responder en el propio archivo, por partes, o en el chat.
 - Donde haya opciones `[ ]`, marca una o varias con `[x]`.
 - Las cifras aproximadas sirven. Una estimación honesta vale más que un dato inventado con precisión.
