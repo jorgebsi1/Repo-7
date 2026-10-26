@@ -11,6 +11,11 @@ Objetivo: saber **qué vende Prolac, cómo opera y qué quiere** de la app, para
 - Donde haya opciones `[ ]`, marca una o varias con `[x]`.
 - Las cifras aproximadas sirven.
 
+## Estado de las respuestas
+- **Respondidas:** 1–11, 13–15 (parcial), 16–20 (ver `12`); **31, 32, 33, 36, 47, 61, 62, 63, 64**.
+- **Pospuestas por el propietario:** 12 y 13 (más vendidos, precios: acabados) y **46** (lista de tiendas).
+- **Siguientes más útiles** (condicionan lo que se construye): 37 (quién alista), 40–45 (lotes, mermas, frío en tienda, planta), 68 (pedidos por hora por tienda), 85–87 (metas), 94 (funciones imprescindibles), 108–111 (pagos), 117 (facturación), 129–130 (presupuesto y operación).
+
 ## Índice
 1. Identidad del negocio (1–10) — *respondido*
 2. Catálogo y productos (11–30)

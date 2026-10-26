@@ -7,9 +7,11 @@ import {
   applyEvent,
   availableEvents,
   coldChainDeadline,
+  coldChainStatus,
   computeTotals,
   customerStepIndex,
   paymentEffect,
+  pickCourier,
   type Actor,
   type OrderEvent,
   type OrderStatus,
@@ -19,6 +21,7 @@ import { BUSINESS_CONFIG, CLOCK, DB, PAYMENT_PROVIDER, type BusinessConfig, type
 import { conflict, notFound } from '../../common/errors';
 import type { Db, Tx } from '../../db/client';
 import { cliente, entrega, eventoPedido, lineaPedido, pago, pedido, ubicacion } from '../../db/schema';
+import { DeliveryService } from '../delivery/delivery.service';
 import { CartService, lineInputSchema, quoteSchema, type PricedLine } from '../cart/cart.service';
 import { InventoryService, StockShortage } from '../inventory/inventory.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -63,6 +66,7 @@ export class OrdersService {
     private readonly cart: CartService,
     private readonly inventory: InventoryService,
     private readonly notifications: NotificationsService,
+    private readonly delivery: DeliveryService,
   ) {}
 
   // ───────────────────────── creación ─────────────────────────
@@ -93,7 +97,6 @@ export class OrdersService {
 
     const now = this.clock.now();
     const deliverAt = input.franja ? new Date(input.franja.inicio) : new Date(now.getTime() + this.cfg.defaultLeadMinutes * 60_000);
-    const zonaId = quote.entrega && quote.entrega.ok ? quote.entrega.zonaId : null;
 
     let pedidoId: string;
     try {
@@ -102,10 +105,9 @@ export class OrdersService {
           .insert(pedido)
           .values({
             clienteId: user.id,
-            ubicacionId: input.ubicacionId,
+            ubicacionId: quote.ubicacionId,
             modo: input.modo,
             direccionSnapshot: input.direccion ?? null,
-            zonaId,
             franjaInicio: input.franja ? new Date(input.franja.inicio) : null,
             franjaFin: input.franja ? new Date(input.franja.fin) : null,
             subtotalEstimadoCents: quote.subtotalCents,
@@ -125,7 +127,7 @@ export class OrdersService {
           .returning();
         await this.inventory.reserve(tx, {
           pedidoId: p!.id,
-          ubicacionId: input.ubicacionId,
+          ubicacionId: quote.ubicacionId,
           lines: lineas.map((l) => ({ lineaId: l.id, skuId: l.skuId, cantidad: l.modalidad === 'PACK' ? l.cantidad! : l.gramosSolicitados! })),
           deliverAt,
           now,
@@ -235,7 +237,7 @@ export class OrdersService {
         throw conflict(r.error, r.message, { estado: p.estado, evento: event });
       }
       const now = this.clock.now();
-      const fields = await this.applyEffects(tx, p, lineas, r.to, now, actorId, actor);
+      const fields = await this.applyEffects(tx, p, lineas, r.to, now, actorId, actor, detalle);
       const [updated] = await tx
         .update(pedido)
         .set({ estado: r.to, actualizadoEn: now, ...fields })
@@ -244,7 +246,7 @@ export class OrdersService {
       await tx.insert(eventoPedido).values({ pedidoId, evento: event, de: p.estado, a: r.to, actor, actorId, detalle });
       return { pedido: updated!, from: p.estado, to: r.to };
     });
-    this.afterCommit(result.pedido, event, result.to);
+    this.afterCommit(result.pedido, event, result.to, detalle);
     // Cancelar o abandonar no deja dinero retenido: el reembolso (o anulación) es automático.
     if (result.to === 'CANCELADO') {
       return this.transition(pedidoId, 'reembolsar', 'sistema', null, { automatico: true });
@@ -260,6 +262,7 @@ export class OrdersService {
     now: Date,
     actorId: string | null,
     actor: Actor,
+    detalle: Record<string, unknown>,
   ): Promise<Partial<typeof pedido.$inferInsert>> {
     const from = p.estado;
     const [pg] = await tx.select().from(pago).where(eq(pago.pedidoId, p.id));
@@ -290,25 +293,36 @@ export class OrdersService {
             await tx.update(pago).set({ estado: 'CAPTURADO', capturadoCents: eff.amountCents }).where(eq(pago.id, pg.id));
           }
         }
-        if (p.modo === 'ENTREGA') {
-          await tx
-            .insert(entrega)
-            .values({ pedidoId: p.id, limiteFrioEn: coldChainDeadline(now, this.cfg.maxMinutesOutOfFridge) })
-            .onConflictDoNothing();
-        }
+        // El reloj de frío (20 min) NO arranca al empacar sino cuando el repartidor sale (EN_CAMINO).
+        if (p.modo === 'ENTREGA') await tx.insert(entrega).values({ pedidoId: p.id }).onConflictDoNothing();
         return { totalFinalCents: totals.totalCents, empacadoEn: now };
       }
 
-      case 'EN_CAMINO':
-        await tx
-          .update(entrega)
-          .set({ despachadoEn: now, repartidorId: actor === 'repartidor' ? actorId : null })
-          .where(eq(entrega.pedidoId, p.id));
+      case 'EN_CAMINO': {
+        // Quien sale: el propio repartidor si se asigna él, o el menos cargado de los que están de turno.
+        let repartidorId: string | null = actor === 'repartidor' ? actorId : null;
+        if (!repartidorId) {
+          const couriers = await this.delivery.courierLoads(tx, p.ubicacionId);
+          const pick = pickCourier(couriers, this.cfg.maxPedidosPorRepartidor);
+          if (!pick) {
+            throw conflict(couriers.length ? 'REPARTO_SATURADO' : 'SIN_REPARTIDORES', couriers.length ? 'Todos los repartidores en turno llevan el máximo de pedidos' : 'No hay repartidores en turno para salir ahora');
+          }
+          repartidorId = pick.id;
+        }
+        const limite = coldChainDeadline(now, this.cfg.maxMinutesOutOfFridge);
+        await tx.update(entrega).set({ despachadoEn: now, repartidorId, limiteFrioEn: limite }).where(eq(entrega.pedidoId, p.id));
+        detalle.repartidorId = repartidorId;
+        detalle.limiteFrioEn = limite.toISOString();
         return {};
+      }
 
-      case 'ENTREGADO':
-        await tx.update(entrega).set({ entregadoEn: now }).where(eq(entrega.pedidoId, p.id));
+      case 'ENTREGADO': {
+        const [en] = await tx.select().from(entrega).where(eq(entrega.pedidoId, p.id));
+        const fuera = !!en?.despachadoEn && coldChainStatus(en.despachadoEn, now, this.cfg.maxMinutesOutOfFridge).excedido;
+        await tx.update(entrega).set({ entregadoEn: now, fueraDeFrio: fuera }).where(eq(entrega.pedidoId, p.id));
+        if (en?.despachadoEn) detalle.fueraDeFrio = fuera;
         return {};
+      }
 
       case 'CANCELADO':
         await this.inventory.release(tx, p.id);
@@ -341,7 +355,7 @@ export class OrdersService {
     }
   }
 
-  private afterCommit(p: PedidoRow, event: OrderEvent, to: OrderStatus) {
+  private afterCommit(p: PedidoRow, event: OrderEvent, to: OrderStatus, detalle: Record<string, unknown>) {
     this.bus.next({ pedidoId: p.id, numero: p.numero, clienteId: p.clienteId, ubicacionId: p.ubicacionId, estado: to, evento: event });
     const plantilla: Partial<Record<OrderStatus, string>> = {
       CONFIRMADO: 'pedido_confirmado',
@@ -357,6 +371,7 @@ export class OrdersService {
     };
     const t = plantilla[to];
     if (t) this.notifications.notify(p.clienteId, t, { numero: p.numero });
+    if (detalle.fueraDeFrio === true) this.notifications.notify(p.clienteId, 'entrega_fuera_de_ventana', { numero: p.numero });
   }
 
   // ───────────────────────── consultas ─────────────────────────
@@ -373,7 +388,7 @@ export class OrdersService {
       user.rol === 'admin' ||
       (user.rol === 'cliente' && p.clienteId === user.id) ||
       (user.rol === 'tienda' && p.ubicacionId === user.ubicacionId) ||
-      (user.rol === 'repartidor' && p.modo === 'ENTREGA');
+      (user.rol === 'repartidor' && p.modo === 'ENTREGA' && p.ubicacionId === user.ubicacionId);
     // Se responde "no existe" para no revelar pedidos ajenos.
     if (!ok) throw notFound('El pedido');
   }
@@ -428,12 +443,26 @@ export class OrdersService {
         estado: l.estado,
       })),
       pago: pg ? { estado: pg.estado, proveedor: pg.proveedor, autorizadoCents: pg.autorizadoCents, capturadoCents: pg.capturadoCents, reembolsadoCents: pg.reembolsadoCents, motivo: pg.estado === 'RECHAZADO' ? pg.referencia : undefined } : null,
-      entrega: en ? { despachadoEn: en.despachadoEn, entregadoEn: en.entregadoEn, limiteFrioEn: en.limiteFrioEn } : null,
+      entrega: en ? await this.entregaDto(en) : null,
       pasos: CUSTOMER_STEPS,
       pasoActual: customerStepIndex(p.estado),
       acciones: user.rol === 'cliente' ? availableEvents(p.estado, 'cliente', ctx) : availableEvents(p.estado, toActor(user), ctx),
       eventos: eventos.map((e) => ({ evento: e.evento, de: e.de, a: e.a, actor: e.actor, en: e.creadoEn, detalle: e.detalle })),
       creadoEn: p.creadoEn,
+    };
+  }
+
+  private async entregaDto(en: typeof entrega.$inferSelect) {
+    const st = en.despachadoEn && !en.entregadoEn ? coldChainStatus(en.despachadoEn, this.clock.now(), this.cfg.maxMinutesOutOfFridge) : null;
+    const [r] = en.repartidorId ? await this.db.select({ nombre: cliente.nombre }).from(cliente).where(eq(cliente.id, en.repartidorId)) : [];
+    return {
+      repartidor: r?.nombre ?? null,
+      despachadoEn: en.despachadoEn,
+      entregadoEn: en.entregadoEn,
+      limiteFrioEn: en.limiteFrioEn,
+      fueraDeFrio: en.fueraDeFrio,
+      minutosRestantes: st?.minutosRestantes ?? null,
+      excedido: st?.excedido ?? false,
     };
   }
 

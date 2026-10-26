@@ -113,3 +113,45 @@ Hay un esqueleto que funciona de punta a punta con datos ficticios: un cliente c
 - **Pendientes técnicos conocidos:** nada programa la liberación de reservas vencidas ni la cancelación de pedidos con pago fallido; OpenAPI sin esquemas de cuerpo; login de desarrollo.
 - **Legal:** nada nuevo se verificó; siguen vigentes los pendientes de `13` §7 (cadena de frío, SUNAT, Ley 29733, Libro de Reclamaciones).
 - Se usó Drizzle y no Prisma (ver `14` §4).
+
+---
+
+# Etapa 4A · Reparto y frío
+
+## 1. Qué hicimos
+- Registramos la tanda 3 en `12` y actualizamos `11` y `13` (decisiones cerradas y pendientes).
+- **Dominio:** distancia en línea recta, tienda más cercana dentro de 4 km, cotización por tienda, reloj de frío de 20 minutos y estado de la ventana, capacidad de reparto y asignación de repartidor (47 pruebas).
+- **Datos:** migraciones `0001` (radio por tienda, elimina `zona_reparto`) y `0002` (`repartidor_turno`); semilla corregida: plantas en Chota y Chiclayo, solo Trujillo vende en línea, 2 repartidores y una tienda de Trujillo con personal propio.
+- **API:** la tienda se resuelve por la dirección; capacidad de reparto; el reloj arranca al salir el repartidor; asignación del menos cargado; entrega tardía registrada; vista del repartidor y resumen para el panel (38 pruebas).
+- **App:** checkout con tienda automática y mensajes de cobertura, cuenta regresiva para el cliente, la tienda y el repartidor, pantalla `/reparto`.
+
+## 2. Dónde estamos
+La entrega a domicilio funciona de punta a punta con reglas reales de Prolac (4 km, cooler, 20 minutos, 2 repartidores). Falta la etapa 4B (POS de mostrador, recepción de camiones, turnos) para que el inventario sea en tiempo real.
+
+## 3. Adónde vamos
+1. **Etapa 4B** (con revisión de alcance antes de construir): stock real con movimientos, caja de mostrador, recepción de camiones, apertura y cierre de turno.
+2. Datos reales: tiendas (pregunta 46), catálogo y precios por CSV, fotos.
+3. Pasarela de pago, facturación electrónica y notificaciones reales.
+
+## 4. Checklist verificado
+| Verificación | Resultado |
+|--------------|-----------|
+| Dominio: 47 pruebas (borde de 3,9 y 4,1 km, dos tiendas, reloj de 20 min justo en el límite, capacidad, desempate) | ✅ |
+| API: 38 pruebas con PGlite; los 34 e2e de pedidos también contra **PostgreSQL 17 real** (las migraciones nuevas se aplican en ambos) | ✅ |
+| La tienda la decide la dirección aunque el cliente tenga otra elegida; el personal de otra tienda no ve el pedido | ✅ |
+| Fuera de 4 km: rechazo con la tienda más cercana y su distancia; Chiclayo sin venta en línea en el piloto | ✅ |
+| El reloj de 20 min arranca al salir el repartidor (esperar en tienda no cuenta); entrega tardía se registra | ✅ |
+| Capacidad: pedido 5 con 2 repartidores → `REPARTO_SATURADO`; sin repartidores → `SIN_REPARTIDORES` y no se puede despachar; recojo sigue disponible | ✅ |
+| Asignación al repartidor menos cargado; el otro repartidor no ve pedidos ajenos | ✅ |
+| Plantas y pedidos por mayor no aparecen en la app | ✅ |
+| `pnpm typecheck`, `pnpm build` y recorrido Playwright con entrega a domicilio, dirección fuera de cobertura y cuenta regresiva (móvil y tablet) | ✅ |
+| Capturas 10–16 revisadas a ojo | ✅ |
+
+## 5. Huecos y limitaciones conocidas
+- **Distancia en línea recta**: subestima la de calle; con 20 minutos de límite puede prometer entregas que por calle no se cumplen. Hace falta medir tiempos reales en el piloto y luego usar mapas.
+- **Supuestos sin confirmar:** máximo de 2 pedidos por repartidor; repartidores fijos a una tienda; tarifa plana por tienda (6,00 en la muestra).
+- **Capacidad sin bloqueo:** dos pedidos simultáneos podrían superar el cupo en uno.
+- **Sin compensación automática** por entrega fuera de ventana: solo se registra y se avisa.
+- **Pruebas de usuario reales:** ninguna; los tiempos de 20 minutos solo se probaron con un reloj simulado.
+- Los datos de tiendas, coordenadas y tarifas siguen siendo **ficticios** hasta que se entregue la pregunta 46.
+- La etapa 4B (POS e inventario en tiempo real) **no está construida**: hoy el stock sigue siendo el esqueleto de la etapa 3.

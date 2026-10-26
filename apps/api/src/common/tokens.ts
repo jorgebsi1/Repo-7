@@ -11,8 +11,10 @@ export const systemClock: Clock = { now: () => new Date() };
 export interface BusinessConfig {
   /** Vida útil mínima que debe quedar al entregar al cliente. */
   minRemainingShelfLifeDays: number;
-  /** Minutos máximos que un pedido empacado puede estar fuera de refrigeración. */
+  /** Minutos máximos entre que el repartidor sale de la tienda (en cooler) y entrega. */
   maxMinutesOutOfFridge: number;
+  /** Pedidos de entrega que puede atender cada repartidor en turno a la vez (hipótesis: 2). */
+  maxPedidosPorRepartidor: number;
   /** Margen con el que se autoriza el cobro de productos por peso. */
   weightMargin: number;
   /** Minutos que dura la reserva de stock mientras se paga. */
@@ -23,7 +25,8 @@ export interface BusinessConfig {
 export const BUSINESS_CONFIG = Symbol('BUSINESS_CONFIG');
 export const defaultBusinessConfig: BusinessConfig = {
   minRemainingShelfLifeDays: 2,
-  maxMinutesOutOfFridge: 90,
+  maxMinutesOutOfFridge: 20,
+  maxPedidosPorRepartidor: 2,
   weightMargin: 0.1,
   reservationTtlMinutes: 10,
   defaultLeadMinutes: 60,

@@ -15,14 +15,16 @@ flowchart LR
     ORD[orders<br/>única dueña del estado]
     FUL[fulfillment<br/>alistar · pesar · empacar]
     PAY[payments<br/>proveedor simulado]
-    DEL[delivery<br/>zonas · frío]
+    DEL[delivery<br/>radio 4 km · capacidad]
+    REP[reparto<br/>turnos · cooler 20 min]
     NOT[notifications<br/>stub]
     ACC[accounts<br/>login de desarrollo]
   end
   DOM[(packages/domain<br/>reglas puras)]
   DB[(PostgreSQL o PGlite)]
   C & P -->|HTTP + SSE| ORD & CART & CAT & FUL
-  ORD --> INV & PAY & NOT
+  ORD --> INV & PAY & NOT & DEL
+  REP --> DEL
   ORD & CART & INV & DEL --> DOM
   ORD & INV & CAT --> DB
 ```
@@ -55,7 +57,7 @@ Cabecera con tienda y conmutador Recojo/Entrega, barra inferior, chips de catego
 - **Drizzle + PGlite en lugar de Prisma:** Drizzle no descarga motores binarios y PGlite permite arrancar sin instalar nada. Es lo previsto en el plan como mitigación.
 - **Panel de tienda** como grupo de rutas `/panel` de la misma app web (no una app aparte).
 - **Redis** no se incluyó: el código no lo usa todavía; se retiró de `docker-compose.yml`.
-- **Zonas de reparto** como polígono JSON con punto-en-polígono en TypeScript (sin PostGIS).
+- ~~Zonas de reparto como polígono JSON~~ → reemplazado en la etapa 4A por un **radio por tienda** (ver §7).
 - **Cancelación por la tienda** (`cancelar`) se añadió al panel porque la máquina de estados ya la permitía.
 
 ## 5. Lo que es provisional
@@ -68,8 +70,9 @@ Cabecera con tienda y conmutador Recojo/Entrega, barra inferior, chips de catego
 | Direcciones | Ubicación de prueba, sin mapa | Autocompletado y mapa |
 | Facturación | No existe | Comprobantes electrónicos con proveedor autorizado (confirmar con el contador) |
 | Libro de Reclamaciones | No existe | Enlace visible y herramienta de Indecopi (verificar reglamento) |
-| Reparto | Cambios de estado manuales | Vista de repartidor o proveedor externo |
-| Inventario | Disponibilidad y lotes propios | Integración con el POS/ERP real (depende de las preguntas 31–32) |
+| Reparto | Vista de repartidor y asignación automática entre 2 repartidores (etapa 4A) | Proveedor externo u otros repartidores, si se decide |
+| Distancia | Línea recta (haversine) hasta 4 km | Distancia y tiempo reales por calle con un servicio de mapas |
+| Inventario | Disponibilidad y lotes propios; cantidad opcional | **POS de mostrador, recepción de camiones y turnos (etapa 4B)**: la app será el sistema de inventario |
 | OpenAPI | Solo lista rutas, sin esquemas de cuerpo | Esquemas generados |
 | Reservas vencidas | Se ignoran al calcular disponibilidad; `releaseExpired` existe pero nada lo programa | Tarea periódica |
 | Pedidos con pago fallido | Quedan abiertos hasta que el cliente cancela | Cancelación automática por tiempo |
@@ -80,3 +83,18 @@ Cabecera con tienda y conmutador Recojo/Entrega, barra inferior, chips de catego
 - Cliente y panel: recorrido real en Chromium (390 px y 1024 px) con capturas revisadas. La revisión encontró y corrigió un desborde del conmutador Recojo/Entrega en móvil.
 - `pnpm dev` arranca API y web sin Docker con datos de muestra.
 - No verificado: la PWA instalada en un teléfono real, pruebas de carga, accesibilidad con lector de pantalla y el comportamiento sin conexión.
+
+## 7. Etapa 4A · Reparto y frío (tanda 3)
+**Reglas nuevas** (ver `12` tanda 3):
+- **Cobertura por radio:** cada tienda cubre hasta **4 km** en línea recta (`ubicacion.radio_entrega_km`, tarifa y mínimos por tienda). Entre las tiendas que cubren una dirección se elige **la más cercana** automáticamente (`packages/domain/src/delivery.ts`). Si ninguna llega, se informa a qué distancia está la más cercana.
+- **Cooler y 20 minutos:** el reloj **arranca cuando el repartidor sale** (`despachar`), no al empacar. Se guarda `entrega.limite_frio_en`; entregar tarde se **permite pero se registra** (`entrega.fuera_de_frio` y el evento).
+- **Capacidad:** con 2 repartidores y máximo 2 pedidos de entrega cada uno (supuesto), el pedido de entrega 5 se rechaza con `REPARTO_SATURADO`; sin repartidores de turno, `SIN_REPARTIDORES`. En ambos casos la app ofrece **recojo**.
+- **Asignación:** al salir, el pedido va al repartidor de turno **con menos pedidos en ruta** (desempate por quien lleva más tiempo libre y, al final, por id). Si sale el propio repartidor, queda asignado a él.
+- **Pedidos por mayor / plantas:** fuera del piloto; las plantas existen como ubicaciones pero no aparecen en la app.
+
+**Piezas nuevas:** `GET /v1/reparto/pedidos` y `POST /v1/reparto/turno` (vista del repartidor), `GET /v1/tienda/reparto` (resumen del panel), `POST /v1/entrega/resolver` (qué tienda atiende una dirección), tabla `repartidor_turno`, migraciones `0001`/`0002`, pantalla `/reparto` y cuenta regresiva (`ColdTimer`) para el repartidor, la tienda y el cliente.
+
+**Verificación:** dominio 47 pruebas; API 38 pruebas (34 e2e también contra PostgreSQL 17 real); recorrido en Chromium con entrega a domicilio, dirección fuera de cobertura y cuenta regresiva (capturas 10–16).
+
+**Limitaciones de 4A:** la distancia en línea recta subestima la de calle; los repartidores pertenecen a una tienda (en el piloto, Las Casuarinas); una carrera entre dos pedidos simultáneos puede dejar pasar uno más de lo que indica la capacidad (no hay bloqueo sobre el conteo de capacidad); `maxPedidosPorRepartidor = 2` es un supuesto; no hay compensación automática por entrega tardía (solo se registra y se avisa).
+

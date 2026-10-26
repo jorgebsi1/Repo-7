@@ -1,5 +1,5 @@
 import type { Db } from './client';
-import { DEMO_CATEGORIAS, DEMO_PRODUCTOS, DEMO_UBICACIONES, DEMO_USUARIOS, DEMO_ZONA } from './seed-data';
+import { DEMO_CATEGORIAS, DEMO_PRODUCTOS, DEMO_UBICACIONES, DEMO_USUARIOS } from './seed-data';
 import {
   categoria,
   cliente,
@@ -7,8 +7,8 @@ import {
   lote,
   producto,
   sku,
+  repartidorTurno,
   ubicacion,
-  zonaReparto,
 } from './schema';
 
 const DAY = 86_400_000;
@@ -70,19 +70,13 @@ export async function seedDemo(db: Db, now: Date = new Date()): Promise<void> {
       }
     }
 
-    const zonaUbic = ubicPorCodigo.get(DEMO_ZONA.ubicacionCodigo)!;
-    await tx.insert(zonaReparto).values({
-      ubicacionId: zonaUbic.id,
-      nombre: DEMO_ZONA.nombre,
-      poligono: DEMO_ZONA.poligono,
-      tarifaCents: DEMO_ZONA.tarifaCents,
-      pedidoMinimoCents: DEMO_ZONA.pedidoMinimoCents,
-      envioGratisDesdeCents: DEMO_ZONA.envioGratisDesdeCents,
-    });
-
     for (const u of DEMO_USUARIOS) {
       const ubicacionId = 'ubicacionCodigo' in u ? ubicPorCodigo.get(u.ubicacionCodigo)!.id : null;
-      await tx.insert(cliente).values({ nombre: u.nombre, telefono: u.telefono, rol: u.rol, ubicacionId });
+      const [c] = await tx.insert(cliente).values({ nombre: u.nombre, telefono: u.telefono, rol: u.rol, ubicacionId }).returning();
+      // Los repartidores de muestra empiezan el día ya en turno en su tienda.
+      if (u.rol === 'repartidor' && ubicacionId) {
+        await tx.insert(repartidorTurno).values({ repartidorId: c!.id, ubicacionId, enTurno: true, desde: now });
+      }
     }
   });
 }

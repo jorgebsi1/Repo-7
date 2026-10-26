@@ -45,6 +45,11 @@ export const ubicacion = pgTable('ubicacion', {
   /** Solo las tiendas con esto en true aparecen en la app. */
   aceptaOnline: boolean('acepta_online').notNull().default(false),
   horario: jsonb('horario').$type<Record<string, string>>(),
+  /** Reparto: la tienda cubre un radio máximo (hoy 4 km) con tarifa plana. */
+  radioEntregaKm: doublePrecision('radio_entrega_km').notNull().default(4),
+  tarifaEntregaCents: integer('tarifa_entrega_cents').notNull().default(600),
+  pedidoMinimoEntregaCents: integer('pedido_minimo_entrega_cents').notNull().default(2500),
+  envioGratisDesdeCents: integer('envio_gratis_desde_cents'),
   /** Marca los datos de muestra para no confundirlos con datos reales. */
   esDemo: boolean('es_demo').notNull().default(false),
 });
@@ -164,19 +169,6 @@ export const direccion = pgTable('direccion', {
   lng: doublePrecision('lng').notNull(),
 });
 
-export const zonaReparto = pgTable('zona_reparto', {
-  id: id(),
-  ubicacionId: uuid('ubicacion_id')
-    .notNull()
-    .references(() => ubicacion.id),
-  nombre: text('nombre').notNull(),
-  /** [[lng, lat], …]. PostGIS queda para más adelante. */
-  poligono: jsonb('poligono').$type<[number, number][]>().notNull(),
-  tarifaCents: integer('tarifa_cents').notNull(),
-  pedidoMinimoCents: integer('pedido_minimo_cents').notNull().default(0),
-  envioGratisDesdeCents: integer('envio_gratis_desde_cents'),
-});
-
 export const carrito = pgTable('carrito', {
   clienteId: uuid('cliente_id')
     .primaryKey()
@@ -200,7 +192,6 @@ export const pedido = pgTable(
     modo: modoEntregaEnum('modo').notNull(),
     estado: estadoPedidoEnum('estado').notNull().default('CREADO'),
     direccionSnapshot: jsonb('direccion_snapshot').$type<{ linea: string; referencia?: string; lat: number; lng: number }>(),
-    zonaId: uuid('zona_id').references(() => zonaReparto.id),
     franjaInicio: timestamp('franja_inicio', { withTimezone: true }),
     franjaFin: timestamp('franja_fin', { withTimezone: true }),
     subtotalEstimadoCents: integer('subtotal_estimado_cents').notNull(),
@@ -299,7 +290,22 @@ export const entrega = pgTable('entrega', {
   repartidorId: uuid('repartidor_id').references(() => cliente.id),
   despachadoEn: timestamp('despachado_en', { withTimezone: true }),
   entregadoEn: timestamp('entregado_en', { withTimezone: true }),
+  /** Hora límite de entrega: salida del repartidor + ventana de frío (20 min). */
   limiteFrioEn: timestamp('limite_frio_en', { withTimezone: true }),
+  /** Se entregó después del límite (queda para medir y compensar). */
+  fueraDeFrio: boolean('fuera_de_frio').notNull().default(false),
+});
+
+/** Quién está de turno como repartidor y en qué tienda (la capacidad de reparto sale de aquí). */
+export const repartidorTurno = pgTable('repartidor_turno', {
+  repartidorId: uuid('repartidor_id')
+    .primaryKey()
+    .references(() => cliente.id),
+  ubicacionId: uuid('ubicacion_id')
+    .notNull()
+    .references(() => ubicacion.id),
+  enTurno: boolean('en_turno').notNull().default(false),
+  desde: timestamp('desde', { withTimezone: true }).notNull().defaultNow(),
 });
 
 /** Solo se inserta, nunca se modifica ni se borra (auditoría). */
@@ -330,7 +336,7 @@ export const schema = {
   lote,
   cliente,
   direccion,
-  zonaReparto,
+  repartidorTurno,
   carrito,
   pedido,
   lineaPedido,

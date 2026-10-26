@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { ColdTimer } from '@/components/ColdTimer';
 import { Badge, Button, Card, ErrorBox, Skeleton } from '@/components/ui';
 import { api, streamUrl } from '@/lib/api';
 import { ESTADO_TEXTO, errorMessage, formatTime, grams, money } from '@/lib/format';
@@ -69,7 +70,14 @@ export default function PedidoPanel() {
         </div>
         <p className="font-medium">{p.cliente?.nombre} · {p.cliente?.telefono}</p>
         {p.modo === 'ENTREGA' && p.direccion && <p className="text-ink-soft">{p.direccion.linea}{p.direccion.referencia ? ` (${p.direccion.referencia})` : ''}</p>}
-        {p.entrega?.limiteFrioEn && <p className="font-semibold text-warn">Cadena de frío: entregar antes de las {formatTime(p.entrega.limiteFrioEn)}</p>}
+        {p.estado === 'EN_CAMINO' && p.entrega?.limiteFrioEn && (
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="font-semibold">Cooler · {p.entrega.repartidor?.replace('[DEMO] ', '')} · antes de las {formatTime(p.entrega.limiteFrioEn)}</span>
+            <ColdTimer limite={p.entrega.limiteFrioEn} />
+          </div>
+        )}
+        {p.estado === 'EMPACADO' && p.modo === 'ENTREGA' && <p className="font-semibold text-warn">Empacado: los 20 min de frío empiezan cuando el repartidor sale.</p>}
+        {p.entrega?.fueraDeFrio && <p className="font-semibold text-bad">Se entregó fuera de la ventana de 20 minutos.</p>}
       </Card>
 
       {error && <ErrorBox>{error}</ErrorBox>}

@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Card, Chip, ErrorBox, Icon } from '@/components/ui';
 import { api } from '@/lib/api';
-import { errorMessage, money } from '@/lib/format';
+import { entregaMensaje, errorMessage, money } from '@/lib/format';
 import { useQuote } from '@/lib/quote';
 import { useSession } from '@/lib/session';
-import { DIRECCION_DEMO, useShop } from '@/lib/shop';
+import { DIRECCIONES_DEMO, useShop } from '@/lib/shop';
 import type { PedidoDto } from '@/lib/types';
 
 const PROPINAS = [0, 100, 200, 300];
@@ -16,15 +16,19 @@ const PROPINAS = [0, 100, 200, 300];
 export default function Checkout() {
   const router = useRouter();
   const { user, ready } = useSession();
-  const { tiendaId, tiendas, modo, setModo, direccion, setDireccion, lineas, clear } = useShop();
+  const { tiendaId, setTiendaId, tiendas, modo, setModo, direccion, setDireccion, lineas, clear } = useShop();
   const { quote, propinaCents, setPropinaCents } = useQuote();
   const [token, setToken] = useState<'tok_ok' | 'tok_rechazo'>('tok_ok');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [linea, setLinea] = useState(direccion?.linea ?? '');
   // Una clave por intento de compra: si el cliente toca dos veces o reintenta, no se duplica el pedido.
   const idemKey = useRef<string>(typeof crypto !== 'undefined' ? crypto.randomUUID() : String(Date.now()));
-  const tienda = tiendas.find((t) => t.id === tiendaId);
+  const tienda = tiendas.find((t) => t.id === (quote?.ubicacionId ?? tiendaId));
+
+  // En entrega la tienda la decide la dirección: si cambia, se actualiza sin vaciar el carrito.
+  useEffect(() => {
+    if (modo === 'ENTREGA' && quote?.entrega?.ok && quote.ubicacionId !== tiendaId) setTiendaId(quote.ubicacionId, true);
+  }, [modo, quote, tiendaId, setTiendaId]);
 
   if (ready && !user) {
     return (
@@ -47,7 +51,7 @@ export default function Checkout() {
     try {
       const r = await api<{ pedido: PedidoDto }>('/v1/pedidos', {
         headers: { 'Idempotency-Key': idemKey.current },
-        body: { ubicacionId: tiendaId, modo, lineas, direccion: modo === 'ENTREGA' ? direccion : undefined, propinaCents, pago: { token } },
+        body: { ubicacionId: quote.ubicacionId, modo, lineas, direccion: modo === 'ENTREGA' ? direccion : undefined, propinaCents, pago: { token } },
       });
       clear();
       router.replace(`/pedido/${r.pedido.id}`);
@@ -80,22 +84,31 @@ export default function Checkout() {
             <p className="text-sm text-ink-soft">Recoges en {tienda ? `${tienda.nombre.replace('[DEMO] ', '')} (${tienda.direccion})` : 'la tienda elegida'}.</p>
           ) : (
             <Card className="space-y-3 p-3">
-              <label className="block text-sm font-medium" htmlFor="dir">
-                Dirección de entrega
-              </label>
-              <input
-                id="dir"
-                value={linea}
-                onChange={(e) => setLinea(e.target.value)}
-                onBlur={() => direccion && setDireccion({ ...direccion, linea })}
-                placeholder="Calle, número, distrito"
-                className="min-h-12 w-full rounded-control border border-line bg-surface px-3"
-              />
-              <Button variant="secondary" block onClick={() => { setDireccion({ ...DIRECCION_DEMO, linea: linea || DIRECCION_DEMO.linea }); setLinea(linea || DIRECCION_DEMO.linea); }}>
-                {direccion ? 'Dirección confirmada ✓' : 'Usar ubicación de prueba (Las Casuarinas)'}
-              </Button>
-              <p className="text-xs text-ink-soft">El mapa y la búsqueda de direcciones llegan en los acabados; por ahora se usa una ubicación de prueba dentro de la zona.</p>
-              {quote?.entrega && !quote.entrega.ok && <ErrorBox>{errorMessage({ code: quote.entrega.reason, message: '', body: { pedidoMinimoCents: quote.entrega.pedidoMinimoCents } })}</ErrorBox>}
+              <p className="text-sm font-medium">Dirección de entrega</p>
+              <div className="flex flex-col gap-2" role="group" aria-label="Direcciones de prueba">
+                {DIRECCIONES_DEMO.map((d) => (
+                  <button
+                    key={d.etiqueta}
+                    aria-pressed={direccion?.lat === d.lat && direccion?.lng === d.lng}
+                    onClick={() => setDireccion({ linea: d.linea, referencia: d.referencia, lat: d.lat, lng: d.lng })}
+                    className={`min-h-12 rounded-control border-2 px-3 text-left text-sm font-medium ${direccion?.lat === d.lat && direccion?.lng === d.lng ? 'border-brand bg-brand-soft text-brand-strong' : 'border-line'}`}
+                  >
+                    {d.etiqueta}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-ink-soft">El mapa y la búsqueda de direcciones llegan en los acabados; por ahora hay direcciones de prueba para ver la cobertura (4 km).</p>
+              {direccion && quote?.entrega?.ok && (
+                <p role="status" className="rounded-control bg-brand-soft p-3 text-sm text-brand-strong">
+                  Te atiende <strong>{quote.tienda.nombre.replace('[DEMO] ', '')}</strong>, a {quote.distanciaKm?.toFixed(1).replace('.', ',')} km. Va en cooler y debe llegar en 20 minutos desde que sale.
+                </p>
+              )}
+              {direccion && quote?.entrega && !quote.entrega.ok && <ErrorBox>{entregaMensaje(quote.entrega)}</ErrorBox>}
+              {quote?.entrega && !quote.entrega.ok && quote.entrega.reason !== 'DIRECCION_REQUERIDA' && (
+                <Button variant="secondary" block onClick={() => setModo('RECOJO')}>
+                  Cambiar a recojo en tienda
+                </Button>
+              )}
             </Card>
           )}
         </section>

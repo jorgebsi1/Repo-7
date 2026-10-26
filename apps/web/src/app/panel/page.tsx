@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ColdTimer } from '@/components/ColdTimer';
 import { Badge, Card, ErrorBox } from '@/components/ui';
 import { api, streamUrl } from '@/lib/api';
 import { ESTADO_TEXTO, errorMessage, formatTime, money } from '@/lib/format';
-import type { PedidoResumen } from '@/lib/types';
+import type { PedidoResumen, TiendaRepartoDto } from '@/lib/types';
 
 const COLUMNAS = [
   { titulo: 'Nuevos', estados: ['CONFIRMADO'], vacio: 'Sin pedidos nuevos' },
@@ -31,6 +32,7 @@ function beep() {
 
 export default function Tablero() {
   const [pedidos, setPedidos] = useState<PedidoResumen[] | null>(null);
+  const [reparto, setReparto] = useState<TiendaRepartoDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const nuevosPrev = useRef<number | null>(null);
 
@@ -44,6 +46,7 @@ export default function Tablero() {
         setError(null);
       })
       .catch((e) => setError(errorMessage(e)));
+    api<TiendaRepartoDto>('/v1/tienda/reparto').then(setReparto).catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -61,6 +64,23 @@ export default function Tablero() {
   return (
     <div className="space-y-3">
       {error && <ErrorBox>{error}</ErrorBox>}
+      {reparto && (
+        <Card className="space-y-2 p-4" aria-label="Reparto">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+            <span className="font-semibold">Reparto</span>
+            <span>{reparto.repartidores.length} repartidor(es) de turno</span>
+            <span>{reparto.pedidosActivos} / {reparto.capacidadMaxima} pedidos de entrega</span>
+            {reparto.aceptaEntregas ? <Badge tono="ok">Aceptando entregas</Badge> : <Badge tono="bad">{reparto.motivoNoAcepta === 'SIN_REPARTIDORES' ? 'Sin repartidores: solo recojo' : 'Saturado: solo recojo'}</Badge>}
+          </div>
+          {reparto.enRuta.map((r) => (
+            <div key={r.pedidoId} className={`flex flex-wrap items-center gap-x-4 rounded-control p-2 ${r.excedido ? 'bg-bad/10' : 'bg-muted'}`}>
+              <span className="font-semibold">#{r.numero} en ruta</span>
+              <span className="text-ink-soft">{r.repartidor?.replace('[DEMO] ', '')}</span>
+              {r.limiteFrioEn && <ColdTimer limite={r.limiteFrioEn} />}
+            </div>
+          ))}
+        </Card>
+      )}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {COLUMNAS.map((c) => {
           const items = (pedidos ?? []).filter((p) => c.estados.includes(p.estado));

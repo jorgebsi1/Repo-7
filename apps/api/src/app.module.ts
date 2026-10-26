@@ -11,6 +11,7 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { RepartoModule } from './modules/reparto/reparto.module';
 
 export interface AppOptions {
   db: DbHandle;
@@ -51,6 +52,7 @@ export class AppModule {
         NotificationsModule,
         OrdersModule,
         FulfillmentModule,
+        RepartoModule,
       ],
       controllers: [HealthController],
     };

@@ -51,3 +51,30 @@ Registro de las respuestas del propietario al cuestionario (`11-cuestionario-des
 
 ### Cambio de ritmo acordado
 El cuestionario v2 sigue disponible, pero las preguntas se entregarán **ordenadas por lo que condiciona la estructura** (sistema de inventario/POS, origen de pedidos, ciudad piloto, reparto, zonas, límite de frío), no por número.
+
+## Tanda 3 · Estructura: sistema, abastecimiento, origen, reparto y frío (preguntas 31, 32, 33, 36, 46, 47, 61, 62, 63, 64)
+| # | Pregunta (resumen) | Respuesta |
+|---|--------------------|-----------|
+| 31 ★ | Sistema actual de inventario, caja y facturación | Un sistema **muy incipiente**; por eso quieren **automatizar sus procesos con la app**. |
+| 32 ★ | Cómo se actualiza el stock de cada tienda | Hoy es **conteo manual al cierre de cada turno**. El propietario aclaró que **buscan eliminar ese proceso**: la app tendrá una **interfaz tipo POS para el vendedor de tienda** y **refrescará el stock en tiempo real**. |
+| 33 ★ | Abastecimiento de tiendas desde plantas | Las plantas están en **Chota y Chiclayo** y despachan en **camiones frigoríficos** hacia **Trujillo y Lima** todos los **miércoles y domingos**. |
+| 36 ★ | Origen de cada pedido en línea | **Por menor:** desde la **tienda más cercana**. **Por mayor:** desde la **planta más cercana**. Decisión: el pedido por mayor queda **fuera del piloto**; solo se deja el diseño preparado. |
+| 46 ★ | Lista de las 6 tiendas (ciudad, dirección, horarios) | **Pendiente.** El propietario la entregará después. Las tiendas del esqueleto son ficticias. |
+| 47 ★ | Ciudad del piloto | **Trujillo.** |
+| 61 ★ | Modalidades | **Ambas:** recojo en tienda y entrega a domicilio. |
+| 62 ★ | Quién reparte | Inicialmente **2 repartidores propios**; luego se evaluarán otras posibilidades. |
+| 63 ★ | Zonas de entrega | La zona depende del **radio máximo**, definido por ahora en **4 km**. |
+| 64 ★ | Límite de frío | Todo lácteo se despacha en **cooler**; el tiempo máximo de entrega es de **20 minutos**. Aclarado: se cuentan **desde que el repartidor sale de la tienda**. |
+
+### Implicaciones (reflejadas en la etapa 4A; ver `14` §7)
+1. La zona pasa de polígono a **radio por tienda (4 km)**; la tienda que atiende una dirección se elige **sola** (la más cercana dentro de su radio).
+2. La ventana de frío pasa de 90 a **20 minutos**, y el reloj arranca en el **despacho**, no al empacar.
+3. Hay **dos repartidores** de turno por tienda con capacidad limitada: si no hay o están saturados, la app **ofrece recojo** en lugar de prometer una entrega en 20 minutos.
+4. La semilla ficticia se corrige: **plantas en Chota y Chiclayo**; solo Trujillo vende en línea en el piloto.
+5. Inventario operativo y POS de mostrador (etapa 4B): **la app es el sistema de inventario**, no se integra con uno ajeno.
+
+### Supuestos propios a confirmar
+- Máximo de **2 pedidos de entrega por repartidor** a la vez.
+- Los repartidores quedan asignados a **una tienda** (no se comparten entre tiendas).
+- La distancia de 4 km se mide **en línea recta**, no por calle (hasta tener mapas).
+

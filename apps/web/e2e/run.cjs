@@ -128,6 +128,66 @@ function assert(cond, msg) {
     await c.screenshot({ path: `${OUT}/09-pedido-entregado.png` });
     assert(true, 'El cliente ve “Entregado” y el total real cobrado');
 
+    // ───── Entrega a domicilio: cobertura de 4 km, tienda automática, repartidor y cooler de 20 min ─────
+    await c.goto(WEB);
+    await c.getByRole('group', { name: 'Modo de entrega' }).getByRole('button', { name: 'Entrega a domicilio' }).click();
+    await c.getByRole('link', { name: /Queso mozzarella/ }).first().click();
+    await c.getByRole('button', { name: 'Aumentar' }).click(); // 2 unidades de S/ 23.50
+    await c.getByRole('button', { name: /Añadir · S\/ 47\.00/ }).click();
+    await c.getByRole('link', { name: /Ver carrito/ }).click();
+    await c.getByRole('button', { name: /Ir a pagar/ }).click();
+    await c.getByRole('heading', { name: 'Finalizar pedido' }).waitFor();
+
+    await c.getByRole('button', { name: 'A 4,1 km (fuera de cobertura)' }).click();
+    await c.getByText(/cubrimos hasta 4 km/).waitFor();
+    assert(await c.getByRole('button', { name: /Confirmar pedido/ }).isDisabled(), 'A 4,1 km: fuera de cobertura y no se puede confirmar');
+    await c.screenshot({ path: `${OUT}/10-checkout-fuera-de-cobertura.png` });
+
+    await c.getByRole('button', { name: 'Las Casuarinas (cerca de la tienda)' }).click();
+    await c.getByRole('status').getByText(/Te atiende/).waitFor();
+    assert(true, 'Dirección cercana: la app asigna sola la tienda que atiende');
+    await c.screenshot({ path: `${OUT}/11-checkout-entrega.png` });
+    await c.getByRole('button', { name: /Confirmar pedido/ }).click();
+    await c.waitForURL(/\/pedido\//);
+    await c.getByRole('status').getByText(/Recibimos tu pedido/).waitFor();
+
+    // La tienda alista y empaca (no despacha: sale el repartidor)
+    await t.goto(`${WEB}/panel`);
+    await t.getByText(/repartidor\(es\) de turno/).waitFor();
+    await t.screenshot({ path: `${OUT}/12-panel-reparto.png` });
+    await t.locator('a[href^="/panel/pedido/"]').first().click();
+    await t.getByText(/Entrega a domicilio/).waitFor();
+    await t.getByRole('button', { name: 'Iniciar alistado' }).click();
+    await t.getByRole('button', { name: /Producto en la bolsa/ }).click();
+    await t.getByRole('button', { name: /Empacar/ }).click();
+    await t.getByText('Total cobrado').waitFor();
+    await t.getByText('S/ 53.00').first().waitFor(); // 2 × 23.50 + entrega 6.00
+
+    // El repartidor sale: arranca el reloj de 20 minutos
+    const rep = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'es-PE' });
+    const r = await rep.newPage();
+    r.on('pageerror', (e) => errores.push(e.message));
+    await r.goto(`${WEB}/cuenta`);
+    await r.getByRole('button', { name: /Repartidor 1 de prueba/ }).click();
+    await r.getByRole('heading', { name: /Listos para salir \(1\)/ }).waitFor();
+    await r.screenshot({ path: `${OUT}/13-reparto-por-salir.png` });
+    await r.getByRole('button', { name: /Salir con este pedido/ }).click();
+    await r.getByRole('heading', { name: /En ruta \(1\)/ }).waitFor();
+    const timer = r.getByRole('timer').first();
+    await timer.waitFor();
+    const txt = await timer.innerText();
+    assert(/^(19|20):\d\d$/.test(txt.trim()), `El repartidor ve la cuenta regresiva de frío desde ~20:00 (${txt.trim()})`);
+    await r.screenshot({ path: `${OUT}/14-reparto-en-ruta.png` });
+
+    await c.getByRole('timer').first().waitFor({ timeout: 20000 });
+    await c.screenshot({ path: `${OUT}/15-pedido-en-camino.png` });
+    assert(true, 'El cliente ve “en camino” con la cuenta regresiva de 20 minutos');
+
+    await r.getByRole('button', { name: 'Entregado', exact: true }).click();
+    await c.getByText('¡Gracias por tu compra!').waitFor({ timeout: 20000 });
+    await c.screenshot({ path: `${OUT}/16-entrega-completada.png` });
+    assert(true, 'Entrega a domicilio completada dentro de la ventana de frío');
+
     // PWA instalable: manifiesto e íconos accesibles
     const m = await (await fetch(`${WEB}/manifest.webmanifest`)).json();
     assert(m.name && m.icons.length >= 2 && m.display === 'standalone', 'Manifiesto PWA válido');

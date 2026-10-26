@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Badge, Button, Card, ErrorBox, Icon, Skeleton } from '@/components/ui';
+import { ColdTimer } from '@/components/ColdTimer';
 import { OrderSteps } from '@/components/OrderSteps';
 import { ApiError, api, streamUrl } from '@/lib/api';
 import { ESTADO_TEXTO, errorMessage, formatTime, grams, money } from '@/lib/format';
@@ -17,7 +18,7 @@ const MENSAJE: Record<string, string> = {
   FALTANTE: 'Un producto no estaba disponible. La tienda está ajustando tu pedido.',
   EMPACADO: 'Tu pedido está empacado con frío.',
   LISTO_RECOJO: 'Tu pedido está listo. Pasa a recogerlo.',
-  EN_CAMINO: 'Tu pedido va en camino, mantenido en frío.',
+  EN_CAMINO: 'Tu pedido va en camino, en cooler.',
   ENTREGADO: '¡Gracias por tu compra!',
   NO_RECOGIDO: 'El pedido no fue recogido a tiempo.',
   FALLIDO_ENTREGA: 'No pudimos entregar tu pedido.',
@@ -94,7 +95,12 @@ export default function PedidoPage() {
       <div className="space-y-4 p-4">
         <p className="text-lg font-semibold" role="status">{MENSAJE[p.estado] ?? est.label}</p>
         {p.pasoActual >= 0 && <OrderSteps pasos={pasos} actual={p.pasoActual} />}
-        {p.entrega?.limiteFrioEn && p.estado !== 'ENTREGADO' && <p className="text-sm text-ink-soft">Cadena de frío: debe llegar antes de las {formatTime(p.entrega.limiteFrioEn)}.</p>}
+        {p.estado === 'EN_CAMINO' && p.entrega?.limiteFrioEn && (
+          <Card className="space-y-1 p-4">
+            <p className="text-sm text-ink-soft">{p.entrega.repartidor ? `${p.entrega.repartidor.replace('[DEMO] ', '')} lleva tu pedido en cooler.` : 'Tu pedido va en cooler.'} Debe llegar antes de las {formatTime(p.entrega.limiteFrioEn)}.</p>
+            <ColdTimer limite={p.entrega.limiteFrioEn} big />
+          </Card>
+        )}
         {p.pago?.motivo && p.estado === 'PAGO_FALLIDO' && <ErrorBox>Pago rechazado ({p.pago.motivo.replace('_', ' ').toLowerCase()}).</ErrorBox>}
         {error && <ErrorBox>{error}</ErrorBox>}
 

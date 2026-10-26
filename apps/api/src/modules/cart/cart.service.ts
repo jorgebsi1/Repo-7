@@ -5,7 +5,6 @@ import {
   authorizedLineCents,
   computeTotals,
   estimateLineCents,
-  type DeliveryQuote,
   type FulfillmentMode,
   type LineRequest,
   type SkuPricing,
@@ -15,7 +14,7 @@ import type { Db } from '../../db/client';
 import { carrito, producto, sku, ubicacion } from '../../db/schema';
 import { BUSINESS_CONFIG, CLOCK, DB, type BusinessConfig, type Clock } from '../../common/tokens';
 import { notFound } from '../../common/errors';
-import { DeliveryService } from '../delivery/delivery.service';
+import { DeliveryService, type DeliveryResolution } from '../delivery/delivery.service';
 import { InventoryService } from '../inventory/inventory.service';
 
 export const lineInputSchema = z
@@ -28,7 +27,8 @@ export const lineInputSchema = z
 export type LineInput = z.infer<typeof lineInputSchema>;
 
 export const quoteSchema = z.object({
-  ubicacionId: z.string().uuid(),
+  /** Obligatoria para recojo. En entrega la tienda se resuelve sola por la dirección. */
+  ubicacionId: z.string().uuid().optional(),
   modo: z.enum(['RECOJO', 'ENTREGA']),
   lineas: z.array(lineInputSchema).min(1).max(60),
   direccion: z.object({ lat: z.number(), lng: z.number() }).optional(),
@@ -111,28 +111,43 @@ export class CartService {
   }
 
   async quote(input: QuoteInput) {
-    const [u] = await this.db.select().from(ubicacion).where(eq(ubicacion.id, input.ubicacionId));
-    if (!u || u.tipo !== 'TIENDA' || !u.aceptaOnline) throw notFound('La tienda');
     const lineas = await this.priceLines(input.lineas);
     const subtotal = lineas.reduce((a, l) => a + l.estimadoCents, 0);
 
-    const disp = await this.inventory.availability(input.ubicacionId, lineas.map((l) => l.skuId), this.clock.now());
+    // En entrega, la tienda la decide la dirección (la más cercana dentro de su radio); en recojo, la elige el cliente.
+    let ubicacionId = input.ubicacionId;
+    let entrega: DeliveryResolution | { ok: false; reason: 'DIRECCION_REQUERIDA' } | null = null;
+    let tarifa = 0;
+    if (input.modo === 'ENTREGA') {
+      entrega = input.direccion
+        ? await this.delivery.resolver([input.direccion.lng, input.direccion.lat], subtotal)
+        : { ok: false, reason: 'DIRECCION_REQUERIDA' };
+      if (entrega.ok) {
+        ubicacionId = entrega.ubicacionId;
+        tarifa = entrega.tarifaCents;
+      } else if ('ubicacionId' in entrega && entrega.ubicacionId) {
+        ubicacionId = entrega.ubicacionId;
+      } else if ('masCercana' in entrega && entrega.masCercana) {
+        ubicacionId = ubicacionId ?? entrega.masCercana.ubicacionId; // solo para mostrar disponibilidad
+      }
+    }
+    if (!ubicacionId) throw new BadRequestException({ code: 'TIENDA_REQUERIDA', message: 'Elige una tienda para continuar' });
+
+    const [u] = await this.db.select().from(ubicacion).where(eq(ubicacion.id, ubicacionId));
+    if (!u || u.tipo !== 'TIENDA' || !u.aceptaOnline) throw notFound('La tienda');
+
+    const disp = await this.inventory.availability(ubicacionId, lineas.map((l) => l.skuId), this.clock.now());
     const problemas = lineas
       .filter((l) => !(disp.get(l.skuId)?.disponible ?? false))
       .map((l) => ({ skuId: l.skuId, motivo: 'NO_DISPONIBLE' as const }));
 
-    let entrega: DeliveryQuote | { ok: false; reason: 'DIRECCION_REQUERIDA' } | null = null;
-    let tarifa = 0;
-    if (input.modo === 'ENTREGA') {
-      entrega = input.direccion
-        ? await this.delivery.cotizar(input.ubicacionId, [input.direccion.lng, input.direccion.lat], subtotal)
-        : { ok: false, reason: 'DIRECCION_REQUERIDA' };
-      if (entrega.ok) tarifa = entrega.tarifaCents;
-    }
     const estimado = computeTotals({ lineCents: lineas.map((l) => l.estimadoCents), deliveryFeeCents: tarifa, tipCents: input.propinaCents });
     const autorizado = computeTotals({ lineCents: lineas.map((l) => l.autorizadoCents), deliveryFeeCents: tarifa, tipCents: input.propinaCents });
     return {
-      ubicacionId: input.ubicacionId,
+      /** Tienda efectiva: la elegida (recojo) o la que cubre la dirección (entrega). */
+      ubicacionId,
+      tienda: { id: u.id, nombre: u.nombre, ciudad: u.ciudad },
+      distanciaKm: entrega && entrega.ok ? Math.round(entrega.distanciaKm * 10) / 10 : null,
       modo: input.modo as FulfillmentMode,
       lineas,
       subtotalCents: estimado.subtotalCents,

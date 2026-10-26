@@ -38,8 +38,11 @@ export function errorMessage(e: unknown): string {
   if (e && typeof e === 'object' && 'code' in e && 'message' in e) {
     const err = e as { code: string; message: string; body?: Record<string, unknown> };
     switch (err.code) {
-      case 'FUERA_DE_ZONA':
-        return 'Esa dirección está fuera de nuestra zona de reparto. Prueba con recojo en tienda.';
+      case 'FUERA_DE_COBERTURA':
+        return 'Esa dirección está fuera de nuestra cobertura de 4 km. Prueba con recojo en tienda.';
+      case 'REPARTO_SATURADO':
+      case 'SIN_REPARTIDORES':
+        return 'Ahora mismo no podemos garantizar la entrega en 20 minutos. Elige recojo en tienda o inténtalo en unos minutos.';
       case 'BAJO_PEDIDO_MINIMO':
         return `El pedido mínimo para entrega es ${money(Number(err.body?.pedidoMinimoCents ?? 0))}.`;
       case 'PRODUCTO_NO_DISPONIBLE':
@@ -51,4 +54,13 @@ export function errorMessage(e: unknown): string {
     return err.message;
   }
   return 'Algo salió mal. Inténtalo de nuevo.';
+}
+
+/** Texto para el resultado de cotizar una entrega que no se puede hacer. */
+export function entregaMensaje(e: { ok: false; reason: string; pedidoMinimoCents?: number; masCercana?: { nombre: string; distanciaKm: number } }): string {
+  if (e.reason === 'FUERA_DE_COBERTURA' && e.masCercana) {
+    return `Estás a ${e.masCercana.distanciaKm.toFixed(1).replace('.', ',')} km de la tienda más cercana y cubrimos hasta 4 km. Prueba con recojo en tienda.`;
+  }
+  if (e.reason === 'DIRECCION_REQUERIDA') return 'Indica tu dirección para ver si llegamos.';
+  return errorMessage({ code: e.reason, message: '', body: { pedidoMinimoCents: e.pedidoMinimoCents } });
 }

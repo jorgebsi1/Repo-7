@@ -47,6 +47,8 @@ export const PHONES = {
   tienda: '+51900000002',
   repartidor: '+51900000003',
   admin: '+51900000004',
+  repartidor2: '+51900000005',
+  tienda2: '+51900000006',
   otroCliente: '+51911111111',
 } as const;
 
@@ -81,6 +83,13 @@ export const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
 let n = 0;
 export const idem = () => `test-key-${Date.now()}-${++n}`;
 
-/** Punto dentro de la zona de reparto de muestra (Las Casuarinas). */
+// Tiendas de muestra: Las Casuarinas (-8.1342, -79.0268) y Trujillo 2 (-8.1118, -79.0287); radio de 4 km.
+/** Junto a Las Casuarinas (~0,4 km). */
 export const DENTRO = { lat: -8.133, lng: -79.03 };
-export const FUERA = { lat: -8.2, lng: -79.2 };
+/** Junto a Trujillo 2: ahí atiende Trujillo 2 aunque el cliente tenga elegida otra tienda. */
+export const CERCA_T02 = { lat: -8.113, lng: -79.028 };
+/** 3,9 km y 4,1 km al este de Las Casuarinas (a esa latitud 1° de longitud ≈ 110,2 km). */
+export const A_3_9KM = { lat: -8.1342, lng: -78.9914 };
+export const A_4_1KM = { lat: -8.1342, lng: -78.9896 };
+/** Chiclayo: sin venta en línea en el piloto. */
+export const CHICLAYO = { lat: -6.7714, lng: -79.8409 };

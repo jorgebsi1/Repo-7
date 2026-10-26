@@ -106,7 +106,7 @@ Reglas:
 | Reservar stock para online → menos producto en góndola → ventas perdidas en tienda | Equilibrio (conflicto interno) | Inmediato | Cupos por tienda y franja horaria; medir ventas totales, no solo online |
 
 ### Riesgos emergentes (segundo orden)
-1. **Doble fuente de verdad del inventario.** Si la app guarda su propio stock y el POS guarda otro, divergen. Decisión pendiente: *el POS/ERP manda* (la app lee y reserva vía integración) o *migrar el stock a un sistema nuevo*. Depende de qué sistema usa Prolac (preguntas 31–32).
+1. ~~Doble fuente de verdad del inventario.~~ **Resuelto por decisión del propietario (tanda 3):** la app **será** el POS y el sistema de inventario (hoy el conteo es manual al cierre del turno). El riesgo cambia de naturaleza: ya no es la divergencia entre dos sistemas, sino que **el POS propio debe ser fiable y rápido en el mostrador** (venta en línea y en mostrador compiten por la misma última unidad: bloqueo transaccional) y que el personal lo adopte. Se construye en la etapa 4B.
 2. **Incentivos desalineados (Ley de Conway).** Si cada encargado de tienda se mide solo por ventas en mostrador, no priorizará alistar pedidos online. Atribuir la venta online a la tienda de origen.
 3. **Éxito que rompe la tienda.** Un pico de pedidos online en la hora de más afluencia presencial satura al mismo personal. Franjas con cupo y alistado fuera del pico.
 4. **Canibalización de canales.** Si hoy se vende a bodegas o a apps de reparto a otros precios, un precio online distinto crea conflicto de canal.
@@ -133,14 +133,26 @@ Reglas:
 | Pagos | Niubiz, Izipay y Culqi como adquirentes; Yape y Plin como billeteras de mayor crecimiento; comisiones muy variables entre fuentes. [Guía de Software](https://www.guiadesoftware.com/blog/mejor-pasarela-pago-peru), [kom.pe](https://kom.pe/pasarelas-pago-tiendas-online-peru-comparativa/), [Andina](https://andina.pe/ingles/noticia-billeteras-electronicas-yape-y-plin-son-los-medios-pago-mayor-crecimiento-986707.aspx) | Cotizar con 2–3 proveedores |
 | Competencia de reparto | PedidosYa operaba en Trujillo y Chiclayo (dato de 2022). [DPL News](https://dplnews.com/peru-pedidosya-apunta-a-abrir-operaciones-en-hasta-10-ciudades-peruanas-en-2022) | Cobertura actual sin verificar |
 
-## 8. Hipótesis de MVP (a validar con el cuestionario)
-1. **Piloto en una ciudad** (hipótesis: Trujillo) con 1–2 tiendas habilitadas para online.
+## 8. Hipótesis de MVP (actualizado tras la tanda 3)
+1. **Piloto en Trujillo** (confirmado). Tiendas por definir; las del esqueleto son ficticias.
 2. Catálogo reducido de los productos más vendidos y de mejor conservación.
-3. **Recojo en tienda** + entrega en zona acotada con frío.
+3. **Recojo en tienda** y **entrega a domicilio** hasta **4 km** de la tienda más cercana, en **cooler y máximo 20 minutos desde que sale el repartidor**, con **2 repartidores propios**. Si no hay repartidores de turno o están saturados, se ofrece recojo.
 4. Pago con tarjeta y Yape/Plin; efectivo contra entrega por decidir.
-5. Panel de tienda para alistar, empacar y despachar; Libro de Reclamaciones visible; comprobante electrónico.
-6. Meta de aprendizaje: pedidos/día, % de faltantes, % de entregas fuera de ventana de frío, recompra a 30 días.
-7. Después: Chiclayo y Lima, suscripciones, B2B.
+5. Panel de tienda para alistar, pesar, empacar y despachar; vista del repartidor con cuenta regresiva; Libro de Reclamaciones visible; comprobante electrónico.
+6. **POS de mostrador e inventario en tiempo real** (etapa 4B): ventas de mostrador, recepción de los camiones de los miércoles y domingos, apertura y cierre de turno.
+7. Meta de aprendizaje: pedidos/día, % de faltantes, **% de entregas fuera de la ventana de 20 min**, recompra a 30 días.
+8. Después: Chiclayo y Lima, **pedidos por mayor desde la planta más cercana**, suscripciones.
 
-## 9. Decisiones que el cuestionario debe cerrar
-Ciudad piloto · sistema de inventario/POS y su API · origen de cada pedido (tienda o almacén) · reparto propio o tercero · ventana máxima de frío · pasarela y facturación · presupuesto y fecha · catálogo inicial.
+## 9. Decisiones del cuestionario: estado
+| Decisión | Estado |
+|----------|--------|
+| Ciudad piloto | ✅ Trujillo |
+| Sistema de inventario/POS | ✅ La app lo será (etapa 4B) |
+| Origen de cada pedido | ✅ Menor: tienda más cercana · Mayor: planta más cercana (fuera del piloto) |
+| Reparto | ✅ 2 repartidores propios al inicio |
+| Cobertura | ✅ Radio de 4 km (línea recta) |
+| Ventana de frío | ✅ 20 min desde que sale el repartidor, en cooler |
+| Tiendas, direcciones y horarios | ⏳ Pendiente (pregunta 46) |
+| Pasarela y facturación | ⏳ Pendiente |
+| Presupuesto y fecha | ⏳ Pendiente |
+| Catálogo inicial, precios y fotos | ⏳ Pendiente (acabados) |

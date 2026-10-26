@@ -14,7 +14,8 @@ export interface Direccion {
 interface ShopCtx {
   tiendas: Tienda[];
   tiendaId: string | null;
-  setTiendaId: (id: string) => void;
+  /** keepCart: al cambiar de tienda por la dirección de entrega, los productos del carrito se conservan. */
+  setTiendaId: (id: string, keepCart?: boolean) => void;
   modo: Modo;
   setModo: (m: Modo) => void;
   direccion: Direccion | null;
@@ -75,7 +76,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     }
   }, [state, ready]);
 
-  const setTiendaId = useCallback((id: string) => setState((s) => (s.tiendaId === id ? s : { ...s, tiendaId: id, lineas: [] })), []);
+  const setTiendaId = useCallback((id: string, keepCart = false) => setState((s) => (s.tiendaId === id ? s : { ...s, tiendaId: id, lineas: keepCart ? s.lineas : [] })), []);
   const setModo = useCallback((modo: Modo) => setState((s) => ({ ...s, modo })), []);
   const setDireccion = useCallback((direccion: Direccion | null) => setState((s) => ({ ...s, direccion })), []);
   const setLines = useCallback((lineas: LineInput[]) => setState((s) => ({ ...s, lineas })), []);
@@ -123,5 +124,9 @@ export function useShop(): ShopCtx {
   return v;
 }
 
-/** Ubicación de ejemplo dentro de la zona de reparto demo (no hay mapa todavía). */
-export const DIRECCION_DEMO: Direccion = { linea: 'Av. de ejemplo 123, Las Casuarinas', referencia: 'Dirección de prueba', lat: -8.133, lng: -79.03 };
+/** Direcciones de prueba (no hay mapa todavía) para ver la cobertura de 4 km en acción. */
+export const DIRECCIONES_DEMO: (Direccion & { etiqueta: string })[] = [
+  { etiqueta: 'Las Casuarinas (cerca de la tienda)', linea: 'Av. de ejemplo 123, Las Casuarinas', referencia: 'Dirección de prueba', lat: -8.133, lng: -79.03 },
+  { etiqueta: 'Zona de Trujillo 2', linea: 'Calle de ejemplo 45, Trujillo', referencia: 'Dirección de prueba', lat: -8.113, lng: -79.028 },
+  { etiqueta: 'A 4,1 km (fuera de cobertura)', linea: 'Zona lejana de prueba', referencia: 'Dirección de prueba', lat: -8.1342, lng: -78.9896 },
+];

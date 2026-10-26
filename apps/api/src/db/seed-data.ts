@@ -3,16 +3,36 @@
  * Sirven para ver la app funcionando. NO son el catálogo, los precios ni las tiendas reales de Prolac:
  * el catálogo real (~200 SKU) se carga con `pnpm import:catalog` desde un CSV (ver data/catalogo-plantilla.csv).
  */
-export const DEMO_UBICACIONES = [
-  { codigo: 'PLANTA-1', nombre: '[DEMO] Planta 1', tipo: 'PLANTA', ciudad: 'Trujillo', direccion: 'Dirección por definir', aceptaOnline: false },
-  { codigo: 'PLANTA-2', nombre: '[DEMO] Planta 2', tipo: 'PLANTA', ciudad: 'Chiclayo', direccion: 'Dirección por definir', aceptaOnline: false },
-  { codigo: 'TRU-CAS', nombre: '[DEMO] Prolac Las Casuarinas', tipo: 'TIENDA', ciudad: 'Trujillo', direccion: 'Urb. Las Casuarinas, Trujillo', lat: -8.1342, lng: -79.0268, aceptaOnline: true },
-  { codigo: 'TRU-02', nombre: '[DEMO] Prolac Trujillo 2', tipo: 'TIENDA', ciudad: 'Trujillo', direccion: 'Dirección por definir', lat: -8.1118, lng: -79.0287, aceptaOnline: true },
-  { codigo: 'CHI-01', nombre: '[DEMO] Prolac Chiclayo 1', tipo: 'TIENDA', ciudad: 'Chiclayo', direccion: 'Dirección por definir', lat: -6.7714, lng: -79.8409, aceptaOnline: true },
+interface DemoUbicacion {
+  codigo: string;
+  nombre: string;
+  tipo: 'PLANTA' | 'TIENDA';
+  ciudad: string;
+  direccion: string;
+  lat?: number;
+  lng?: number;
+  aceptaOnline: boolean;
+  /** Reparto (solo tiendas): radio máximo en km, tarifa plana y mínimos en céntimos. */
+  radioEntregaKm?: number;
+  tarifaEntregaCents?: number;
+  pedidoMinimoEntregaCents?: number;
+  envioGratisDesdeCents?: number;
+}
+
+/**
+ * Plantas reales (Chota y Chiclayo) con direcciones y coordenadas de muestra. Piloto: solo Trujillo vende en línea.
+ * Las tiendas y sus coordenadas son FICTICIAS hasta que el propietario entregue ciudades, direcciones y horarios.
+ */
+export const DEMO_UBICACIONES: DemoUbicacion[] = [
+  { codigo: 'PLANTA-CHOTA', nombre: '[DEMO] Planta Chota', tipo: 'PLANTA', ciudad: 'Chota', direccion: 'Dirección por definir', lat: -6.5586, lng: -78.6486, aceptaOnline: false },
+  { codigo: 'PLANTA-CHICLAYO', nombre: '[DEMO] Planta Chiclayo', tipo: 'PLANTA', ciudad: 'Chiclayo', direccion: 'Dirección por definir', lat: -6.7714, lng: -79.8409, aceptaOnline: false },
+  { codigo: 'TRU-CAS', nombre: '[DEMO] Prolac Las Casuarinas', tipo: 'TIENDA', ciudad: 'Trujillo', direccion: 'Urb. Las Casuarinas, Trujillo', lat: -8.1342, lng: -79.0268, aceptaOnline: true, radioEntregaKm: 4, tarifaEntregaCents: 600, pedidoMinimoEntregaCents: 2500, envioGratisDesdeCents: 9000 },
+  { codigo: 'TRU-02', nombre: '[DEMO] Prolac Trujillo 2', tipo: 'TIENDA', ciudad: 'Trujillo', direccion: 'Dirección por definir', lat: -8.1118, lng: -79.0287, aceptaOnline: true, radioEntregaKm: 4, tarifaEntregaCents: 500, pedidoMinimoEntregaCents: 2000 },
+  { codigo: 'CHI-01', nombre: '[DEMO] Prolac Chiclayo 1', tipo: 'TIENDA', ciudad: 'Chiclayo', direccion: 'Dirección por definir', lat: -6.7714, lng: -79.8409, aceptaOnline: false },
   { codigo: 'CHI-02', nombre: '[DEMO] Prolac Chiclayo 2', tipo: 'TIENDA', ciudad: 'Chiclayo', direccion: 'Dirección por definir', lat: -6.7766, lng: -79.8447, aceptaOnline: false },
   { codigo: 'LIM-01', nombre: '[DEMO] Prolac Lima 1', tipo: 'TIENDA', ciudad: 'Lima', direccion: 'Dirección por definir', lat: -12.0464, lng: -77.0428, aceptaOnline: false },
   { codigo: 'LIM-02', nombre: '[DEMO] Prolac Lima 2', tipo: 'TIENDA', ciudad: 'Lima', direccion: 'Dirección por definir', lat: -12.0897, lng: -77.0279, aceptaOnline: false },
-] as const;
+];
 
 export const DEMO_CATEGORIAS = [
   { slug: 'leche', nombre: 'Leche', orden: 1 },
@@ -102,25 +122,12 @@ export const DEMO_PRODUCTOS: DemoProducto[] = [
   },
 ];
 
-/** Zona de reparto ficticia alrededor de la tienda demo de Las Casuarinas. */
-export const DEMO_ZONA = {
-  ubicacionCodigo: 'TRU-CAS',
-  nombre: '[DEMO] Zona Las Casuarinas',
-  poligono: [
-    [-79.045, -8.145],
-    [-79.01, -8.145],
-    [-79.01, -8.122],
-    [-79.045, -8.122],
-  ] as [number, number][],
-  tarifaCents: 600,
-  pedidoMinimoCents: 2500,
-  envioGratisDesdeCents: 9000,
-};
-
 /** Personal de desarrollo. Teléfonos ficticios; el login de desarrollo usa DEV_LOGIN_CODE. */
 export const DEMO_USUARIOS = [
   { nombre: '[DEMO] Cliente', telefono: '+51900000001', rol: 'cliente' },
   { nombre: '[DEMO] Tienda Las Casuarinas', telefono: '+51900000002', rol: 'tienda', ubicacionCodigo: 'TRU-CAS' },
-  { nombre: '[DEMO] Repartidor', telefono: '+51900000003', rol: 'repartidor' },
+  { nombre: '[DEMO] Repartidor 1', telefono: '+51900000003', rol: 'repartidor', ubicacionCodigo: 'TRU-CAS' },
   { nombre: '[DEMO] Admin', telefono: '+51900000004', rol: 'admin' },
+  { nombre: '[DEMO] Repartidor 2', telefono: '+51900000005', rol: 'repartidor', ubicacionCodigo: 'TRU-CAS' },
+  { nombre: '[DEMO] Tienda Trujillo 2', telefono: '+51900000006', rol: 'tienda', ubicacionCodigo: 'TRU-02' },
 ] as const;

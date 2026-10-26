@@ -11,7 +11,8 @@ import { useSession } from '@/lib/session';
 const DEMO_USERS = [
   { label: 'Cliente de prueba', telefono: '+51900000001' },
   { label: 'Tienda Las Casuarinas (panel)', telefono: '+51900000002' },
-  { label: 'Repartidor de prueba', telefono: '+51900000003' },
+  { label: 'Repartidor 1 de prueba (vista de reparto)', telefono: '+51900000003' },
+  { label: 'Repartidor 2 de prueba', telefono: '+51900000005' },
   { label: 'Administrador de prueba', telefono: '+51900000004' },
 ];
 
@@ -30,7 +31,7 @@ function CuentaInner() {
     setError(null);
     try {
       const u = await login(tel, cod, nom);
-      router.replace(u.rol === 'tienda' || u.rol === 'admin' ? '/panel' : next);
+      router.replace(u.rol === 'tienda' || u.rol === 'admin' ? '/panel' : u.rol === 'repartidor' ? '/reparto' : next);
     } catch (e) {
       setError(errorMessage(e));
     } finally {
@@ -46,6 +47,9 @@ function CuentaInner() {
           <p className="font-semibold">{user.nombre}</p>
           <p className="text-ink-soft">{user.telefono}</p>
         </Card>
+        {user.rol === 'repartidor' && (
+          <Link href="/reparto" className="flex min-h-12 items-center justify-center rounded-control bg-brand font-semibold text-white">Ir a mi reparto</Link>
+        )}
         {(user.rol === 'tienda' || user.rol === 'admin') && (
           <Link href="/panel" className="flex min-h-12 items-center justify-center rounded-control bg-brand font-semibold text-white">Ir al panel de tienda</Link>
         )}

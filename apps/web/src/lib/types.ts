@@ -64,11 +64,21 @@ export interface QuoteLine {
 }
 
 export type EntregaQuote =
-  | { ok: true; zonaId: string; tarifaCents: number }
-  | { ok: false; reason: string; pedidoMinimoCents?: number }
+  | { ok: true; ubicacionId: string; nombre: string; distanciaKm: number; tarifaCents: number }
+  | {
+      ok: false;
+      reason: string;
+      ubicacionId?: string;
+      pedidoMinimoCents?: number;
+      masCercana?: { ubicacionId: string; nombre: string; distanciaKm: number };
+    }
   | null;
 
 export interface QuoteDto {
+  /** Tienda efectiva: la elegida (recojo) o la que cubre la dirección (entrega). */
+  ubicacionId: string;
+  tienda: { id: string; nombre: string; ciudad: string };
+  distanciaKm: number | null;
   lineas: QuoteLine[];
   subtotalCents: number;
   tarifaEntregaCents: number;
@@ -113,7 +123,15 @@ export interface PedidoDto {
   };
   lineas: PedidoLinea[];
   pago: { estado: string; motivo?: string; capturadoCents: number; reembolsadoCents: number } | null;
-  entrega: { limiteFrioEn: string | null } | null;
+  entrega: {
+    repartidor: string | null;
+    despachadoEn: string | null;
+    entregadoEn: string | null;
+    limiteFrioEn: string | null;
+    fueraDeFrio: boolean;
+    minutosRestantes: number | null;
+    excedido: boolean;
+  } | null;
   pasos: string[];
   pasoActual: number;
   acciones: string[];
@@ -142,4 +160,35 @@ export interface Usuario {
   telefono: string;
   rol: Rol;
   ubicacionId: string | null;
+}
+
+export interface RepartoCard {
+  id: string;
+  numero: number;
+  estado: string;
+  cliente: string;
+  telefono: string;
+  direccion: { linea: string; referencia?: string } | null;
+  resumen: string[];
+  totalFinalCents: number | null;
+  limiteFrioEn: string | null;
+  minutosRestantes: number | null;
+  excedido: boolean;
+}
+
+export interface RepartoDto {
+  enTurno: boolean;
+  maxMinutosFrio: number;
+  enRuta: RepartoCard[];
+  porSalir: RepartoCard[];
+}
+
+export interface TiendaRepartoDto {
+  repartidores: { id: string; nombre: string; enRuta: number }[];
+  pedidosActivos: number;
+  capacidadMaxima: number;
+  aceptaEntregas: boolean;
+  motivoNoAcepta: string | null;
+  maxMinutosFrio: number;
+  enRuta: { pedidoId: string; numero: number; repartidor: string | null; limiteFrioEn: string | null; minutosRestantes: number | null; excedido: boolean }[];
 }

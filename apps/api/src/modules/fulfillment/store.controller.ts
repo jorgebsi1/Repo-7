@@ -8,6 +8,7 @@ import { AuthGuard, CurrentUser, Roles } from '../../common/auth.guard';
 import { BadRequestException } from '@nestjs/common';
 import { parse } from '../../common/zod';
 import { CatalogService } from '../catalog/catalog.service';
+import { DeliveryService } from '../delivery/delivery.service';
 import { OrdersService } from '../orders/orders.service';
 import { FulfillmentService } from './fulfillment.service';
 
@@ -25,6 +26,7 @@ export class StoreController {
     private readonly orders: OrdersService,
     private readonly fulfillment: FulfillmentService,
     private readonly catalog: CatalogService,
+    private readonly delivery: DeliveryService,
   ) {}
 
   @Get('pedidos')
@@ -34,6 +36,14 @@ export class StoreController {
     const invalid = estados?.filter((e) => !(ORDER_STATUSES as readonly string[]).includes(e));
     if (invalid?.length) throw new BadRequestException({ code: 'ESTADO_INVALIDO', message: `Estados inválidos: ${invalid.join(', ')}` });
     return this.orders.listForStore(user, estados as OrderStatus[] | undefined);
+  }
+
+  /** Capacidad de reparto de la tienda: repartidores de turno, pedidos en ruta y cuenta de frío. */
+  @Get('reparto')
+  @Roles('tienda', 'admin')
+  reparto(@CurrentUser() user: AuthUser) {
+    if (!user.ubicacionId) throw new BadRequestException({ code: 'TIENDA_REQUERIDA', message: 'Indica la tienda (usuario administrador sin tienda)' });
+    return this.delivery.resumen(user.ubicacionId);
   }
 
   @Get('pedidos/:id')

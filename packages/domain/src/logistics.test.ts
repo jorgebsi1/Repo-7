@@ -1,12 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import {
-  coldChainDeadline,
-  isWithinColdChain,
-  pointInPolygon,
-  quoteDelivery,
-  type DeliveryZone,
-  type Polygon,
-} from './delivery.js';
 import { DEFAULT_RESERVATION_TTL_MINUTES, isReservationActive, reservationExpiry } from './reservation.js';
 import { allocateFEFO, isAcceptableForDelivery, remainingShelfLifeDays } from './shelf-life.js';
 
@@ -56,46 +48,3 @@ describe('reserva con TTL', () => {
   });
 });
 
-describe('zonas de reparto y cadena de frío', () => {
-  // Cuadrado ficticio alrededor de (-79.03, -8.11)
-  const poligono: Polygon = [
-    [-79.04, -8.12],
-    [-79.02, -8.12],
-    [-79.02, -8.1],
-    [-79.04, -8.1],
-  ];
-  const zona: DeliveryZone = {
-    id: 'z1',
-    ubicacionId: 'tienda-1',
-    nombre: 'Zona ficticia',
-    poligono,
-    tarifaCents: 600,
-    pedidoMinimoCents: 3000,
-    envioGratisDesdeCents: 8000,
-  };
-
-  it('punto dentro y fuera del polígono', () => {
-    expect(pointInPolygon([-79.03, -8.11], poligono)).toBe(true);
-    expect(pointInPolygon([-79.0, -8.11], poligono)).toBe(false);
-  });
-
-  it('cotiza tarifa, mínimo, envío gratis y fuera de zona', () => {
-    const dentro = [-79.03, -8.11] as const;
-    expect(quoteDelivery([zona], 'tienda-1', dentro, 5000)).toEqual({ ok: true, zonaId: 'z1', tarifaCents: 600 });
-    expect(quoteDelivery([zona], 'tienda-1', dentro, 9000)).toEqual({ ok: true, zonaId: 'z1', tarifaCents: 0 });
-    expect(quoteDelivery([zona], 'tienda-1', dentro, 2000)).toEqual({
-      ok: false,
-      reason: 'BAJO_PEDIDO_MINIMO',
-      pedidoMinimoCents: 3000,
-    });
-    expect(quoteDelivery([zona], 'tienda-1', [-79.0, -8.11], 5000)).toEqual({ ok: false, reason: 'FUERA_DE_ZONA' });
-    expect(quoteDelivery([zona], 'otra-tienda', dentro, 5000)).toEqual({ ok: false, reason: 'FUERA_DE_ZONA' });
-  });
-
-  it('ventana de frío', () => {
-    const packed = new Date('2026-03-10T12:00:00Z');
-    expect(coldChainDeadline(packed, 90).toISOString()).toBe('2026-03-10T13:30:00.000Z');
-    expect(isWithinColdChain(packed, new Date('2026-03-10T13:30:00Z'), 90)).toBe(true);
-    expect(isWithinColdChain(packed, new Date('2026-03-10T13:31:00Z'), 90)).toBe(false);
-  });
-});
