@@ -1,0 +1,15 @@
+# Opcional: Postgres y Redis reales. Para desarrollo basta `pnpm dev` (usa PGlite).
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: prolac
+      POSTGRES_PASSWORD: prolac
+      POSTGRES_DB: prolac
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+volumes:
+  pgdata:

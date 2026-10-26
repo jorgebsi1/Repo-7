@@ -1,0 +1,3 @@
+categoria_slug,categoria_nombre,producto_codigo,producto_nombre,descripcion,registro_sanitario,vida_util_dias,sku_codigo,presentacion,modalidad,gramos,precio_soles,precio_kg_soles,paso_gramos,min_gramos,max_gramos,imagen_url
+quesos,Quesos,QUE-EJEMPLO,Queso de ejemplo (BORRAR),Fila de ejemplo: reemplazar por productos reales,REGISTRO-SANITARIO-REAL,10,QUE-EJEMPLO-400,Envasado al vacío 400 g,PACK,400,14.80,,,,,
+quesos,Quesos,QUE-EJEMPLO,Queso de ejemplo (BORRAR),Fila de ejemplo: reemplazar por productos reales,REGISTRO-SANITARIO-REAL,10,QUE-EJEMPLO-PESO,Por peso,PESO,,,36.00,50,200,3000,
