@@ -48,7 +48,6 @@ export const ubicacion = pgTable('ubicacion', {
   /** Reparto: la tienda cubre un radio máximo (hoy 4 km) con tarifa plana. */
   radioEntregaKm: doublePrecision('radio_entrega_km').notNull().default(4),
   tarifaEntregaCents: integer('tarifa_entrega_cents').notNull().default(600),
-  pedidoMinimoEntregaCents: integer('pedido_minimo_entrega_cents').notNull().default(2500),
   envioGratisDesdeCents: integer('envio_gratis_desde_cents'),
   /** Marca los datos de muestra para no confundirlos con datos reales. */
   esDemo: boolean('es_demo').notNull().default(false),
@@ -201,6 +200,8 @@ export const pedido = pgTable(
     totalEstimadoCents: integer('total_estimado_cents').notNull(),
     totalAutorizadoCents: integer('total_autorizado_cents').notNull(),
     totalFinalCents: integer('total_final_cents'),
+    /** Hora aproximada de llegada que se le mostró al cliente (extremo superior del rango). Solo entregas. */
+    entregaEstimadaEn: timestamp('entrega_estimada_en', { withTimezone: true }),
     notas: text('notas'),
     idempotencyKey: text('idempotency_key').notNull(),
     empacadoEn: timestamp('empacado_en', { withTimezone: true }),
@@ -290,10 +291,10 @@ export const entrega = pgTable('entrega', {
   repartidorId: uuid('repartidor_id').references(() => cliente.id),
   despachadoEn: timestamp('despachado_en', { withTimezone: true }),
   entregadoEn: timestamp('entregado_en', { withTimezone: true }),
-  /** Hora límite de entrega: salida del repartidor + ventana de frío (20 min). */
+  /** Hora META de llegada: salida del repartidor + 20 min. */
   limiteFrioEn: timestamp('limite_frio_en', { withTimezone: true }),
-  /** Se entregó después del límite (queda para medir y compensar). */
-  fueraDeFrio: boolean('fuera_de_frio').notNull().default(false),
+  /** Se entregó después de la meta de 20 min (solo se registra para medir; no es una falla ni bloquea). */
+  demorado: boolean('demorado').notNull().default(false),
 });
 
 /** Quién está de turno como repartidor y en qué tienda (la capacidad de reparto sale de aquí). */

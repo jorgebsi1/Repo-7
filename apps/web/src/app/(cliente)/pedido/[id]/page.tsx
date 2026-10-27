@@ -95,9 +95,17 @@ export default function PedidoPage() {
       <div className="space-y-4 p-4">
         <p className="text-lg font-semibold" role="status">{MENSAJE[p.estado] ?? est.label}</p>
         {p.pasoActual >= 0 && <OrderSteps pasos={pasos} actual={p.pasoActual} />}
+        {p.modo === 'ENTREGA' && p.entregaEstimadaEn && !['ENTREGADO', 'EN_CAMINO', 'CANCELADO', 'REEMBOLSADO', 'PAGO_FALLIDO', 'FALLIDO_ENTREGA'].includes(p.estado) && (
+          <p className="rounded-control bg-brand-soft p-3 text-sm font-medium text-brand-strong">
+            Llegada aproximada: {formatTime(p.entregaEstimadaEn)} · Te avisamos cuando salga tu pedido
+          </p>
+        )}
         {p.estado === 'EN_CAMINO' && p.entrega?.limiteFrioEn && (
           <Card className="space-y-1 p-4">
-            <p className="text-sm text-ink-soft">{p.entrega.repartidor ? `${p.entrega.repartidor.replace('[DEMO] ', '')} lleva tu pedido en cooler.` : 'Tu pedido va en cooler.'} Debe llegar antes de las {formatTime(p.entrega.limiteFrioEn)}.</p>
+            <p className="text-sm text-ink-soft">
+              {p.entrega.repartidor ? `${p.entrega.repartidor.replace('[DEMO] ', '')} lleva tu pedido en cooler.` : 'Tu pedido va en cooler.'}{' '}
+              {p.entrega.demorado ? 'Está por llegar, gracias por tu paciencia.' : `Debería llegar hacia las ${formatTime(p.entrega.limiteFrioEn)}.`}
+            </p>
             <ColdTimer limite={p.entrega.limiteFrioEn} big />
           </Card>
         )}

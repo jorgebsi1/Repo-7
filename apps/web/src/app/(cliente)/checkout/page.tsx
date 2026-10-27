@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Button, Card, Chip, ErrorBox, Icon } from '@/components/ui';
 import { api } from '@/lib/api';
-import { entregaMensaje, errorMessage, money } from '@/lib/format';
+import { entregaMensaje, errorMessage, money, rangoMin } from '@/lib/format';
 import { useQuote } from '@/lib/quote';
 import { useSession } from '@/lib/session';
 import { DIRECCIONES_DEMO, useShop } from '@/lib/shop';
@@ -99,14 +99,24 @@ export default function Checkout() {
               </div>
               <p className="text-xs text-ink-soft">El mapa y la búsqueda de direcciones llegan en los acabados; por ahora hay direcciones de prueba para ver la cobertura (4 km).</p>
               {direccion && quote?.entrega?.ok && (
-                <p role="status" className="rounded-control bg-brand-soft p-3 text-sm text-brand-strong">
-                  Te atiende <strong>{quote.tienda.nombre.replace('[DEMO] ', '')}</strong>, a {quote.distanciaKm?.toFixed(1).replace('.', ',')} km. Va en cooler y debe llegar en 20 minutos desde que sale.
-                </p>
+                <div role="status" className={`space-y-1 rounded-control p-3 text-sm ${quote.entregaEstimada?.nivelCarga === 'ALTA' ? 'bg-warn/15 text-warn' : 'bg-brand-soft text-brand-strong'}`}>
+                  <p>
+                    Te atiende <strong>{quote.tienda.nombre.replace('[DEMO] ', '')}</strong>, a {quote.distanciaKm?.toFixed(1).replace('.', ',')} km. Va en cooler.
+                  </p>
+                  {quote.entregaEstimada && (
+                    <p className="text-base font-bold">
+                      Entrega estimada: {rangoMin(quote.entregaEstimada)}
+                    </p>
+                  )}
+                  {quote.entregaEstimada?.nivelCarga === 'ALTA' && (
+                    <p>Hoy hay más pedidos de lo normal, por eso tardamos un poco más. Te avisamos cuando salga tu pedido.</p>
+                  )}
+                </div>
               )}
               {direccion && quote?.entrega && !quote.entrega.ok && <ErrorBox>{entregaMensaje(quote.entrega)}</ErrorBox>}
-              {quote?.entrega && !quote.entrega.ok && quote.entrega.reason !== 'DIRECCION_REQUERIDA' && (
+              {quote?.entrega && !quote.entrega.ok && quote.entrega.reason === 'FUERA_DE_COBERTURA' && (
                 <Button variant="secondary" block onClick={() => setModo('RECOJO')}>
-                  Cambiar a recojo en tienda
+                  Recoger en tienda
                 </Button>
               )}
             </Card>

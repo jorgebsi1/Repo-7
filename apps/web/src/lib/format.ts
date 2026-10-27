@@ -39,12 +39,7 @@ export function errorMessage(e: unknown): string {
     const err = e as { code: string; message: string; body?: Record<string, unknown> };
     switch (err.code) {
       case 'FUERA_DE_COBERTURA':
-        return 'Esa dirección está fuera de nuestra cobertura de 4 km. Prueba con recojo en tienda.';
-      case 'REPARTO_SATURADO':
-      case 'SIN_REPARTIDORES':
-        return 'Ahora mismo no podemos garantizar la entrega en 20 minutos. Elige recojo en tienda o inténtalo en unos minutos.';
-      case 'BAJO_PEDIDO_MINIMO':
-        return `El pedido mínimo para entrega es ${money(Number(err.body?.pedidoMinimoCents ?? 0))}.`;
+        return 'Todavía no llegamos a esa dirección: cubrimos hasta 4 km de cada tienda.';
       case 'PRODUCTO_NO_DISPONIBLE':
       case 'SIN_STOCK':
         return 'Algún producto ya no está disponible. Revisa tu carrito.';
@@ -56,11 +51,16 @@ export function errorMessage(e: unknown): string {
   return 'Algo salió mal. Inténtalo de nuevo.';
 }
 
-/** Texto para el resultado de cotizar una entrega que no se puede hacer. */
-export function entregaMensaje(e: { ok: false; reason: string; pedidoMinimoCents?: number; masCercana?: { nombre: string; distanciaKm: number } }): string {
+/** Texto cuando una dirección queda fuera de la cobertura (la única razón para no repartir). */
+export function entregaMensaje(e: { ok: false; reason: string; masCercana?: { nombre: string; distanciaKm: number } }): string {
   if (e.reason === 'FUERA_DE_COBERTURA' && e.masCercana) {
-    return `Estás a ${e.masCercana.distanciaKm.toFixed(1).replace('.', ',')} km de la tienda más cercana y cubrimos hasta 4 km. Prueba con recojo en tienda.`;
+    return `Todavía no llegamos a esa dirección: estás a ${e.masCercana.distanciaKm.toFixed(1).replace('.', ',')} km de la tienda más cercana y cubrimos hasta 4 km. También puedes recoger tu pedido en tienda.`;
   }
-  if (e.reason === 'DIRECCION_REQUERIDA') return 'Indica tu dirección para ver si llegamos.';
-  return errorMessage({ code: e.reason, message: '', body: { pedidoMinimoCents: e.pedidoMinimoCents } });
+  if (e.reason === 'DIRECCION_REQUERIDA') return 'Indica tu dirección para ver el tiempo de entrega.';
+  return errorMessage({ code: e.reason, message: '' });
+}
+
+/** "40–50 min". */
+export function rangoMin(e: { minMin: number; maxMin: number }): string {
+  return `${e.minMin}–${e.maxMin} min`;
 }

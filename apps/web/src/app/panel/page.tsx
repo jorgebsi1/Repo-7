@@ -69,13 +69,24 @@ export default function Tablero() {
           <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
             <span className="font-semibold">Reparto</span>
             <span>{reparto.repartidores.length} repartidor(es) de turno</span>
-            <span>{reparto.pedidosActivos} / {reparto.capacidadMaxima} pedidos de entrega</span>
-            {reparto.aceptaEntregas ? <Badge tono="ok">Aceptando entregas</Badge> : <Badge tono="bad">{reparto.motivoNoAcepta === 'SIN_REPARTIDORES' ? 'Sin repartidores: solo recojo' : 'Saturado: solo recojo'}</Badge>}
+            <span>{reparto.pedidosPorAlistar} por alistar · {reparto.pedidosEsperandoSalir} esperando salir</span>
+            <Badge tono={reparto.nivelCarga === 'ALTA' ? 'warn' : 'ok'}>Carga {reparto.nivelCarga === 'ALTA' ? 'alta' : 'normal'}</Badge>
+            <span className="text-ink-soft">Un cliente nuevo vería {reparto.estimadoNuevo.minMin}–{reparto.estimadoNuevo.maxMin} min</span>
           </div>
+          {reparto.sinRepartidores && (
+            <p role="alert" className="rounded-control bg-bad/10 p-3 font-semibold text-bad">
+              No hay repartidores de turno. Los pedidos siguen entrando y se estiman con más espera: pon a alguien de turno o sal tú a repartir.
+            </p>
+          )}
+          {reparto.conPromesaVencida.length > 0 && (
+            <p className="rounded-control bg-warn/15 p-3 font-semibold text-warn">
+              {reparto.conPromesaVencida.length} pedido(s) ya pasaron la hora aproximada que se le dijo al cliente: {reparto.conPromesaVencida.map((x) => `#${x.numero}`).join(', ')}.
+            </p>
+          )}
           {reparto.enRuta.map((r) => (
-            <div key={r.pedidoId} className={`flex flex-wrap items-center gap-x-4 rounded-control p-2 ${r.excedido ? 'bg-bad/10' : 'bg-muted'}`}>
+            <div key={r.pedidoId} className={`flex flex-wrap items-center gap-x-4 rounded-control p-2 ${r.demorado ? 'bg-warn/15' : 'bg-muted'}`}>
               <span className="font-semibold">#{r.numero} en ruta</span>
-              <span className="text-ink-soft">{r.repartidor?.replace('[DEMO] ', '')}</span>
+              <span className="text-ink-soft">{r.repartidor ? r.repartidor.replace('[DEMO] ', '') : 'sin repartidor asignado (sale la tienda)'}</span>
               {r.limiteFrioEn && <ColdTimer limite={r.limiteFrioEn} />}
             </div>
           ))}

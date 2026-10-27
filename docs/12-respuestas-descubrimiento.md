@@ -68,8 +68,8 @@ El cuestionario v2 sigue disponible, pero las preguntas se entregarán **ordenad
 
 ### Implicaciones (reflejadas en la etapa 4A; ver `14` §7)
 1. La zona pasa de polígono a **radio por tienda (4 km)**; la tienda que atiende una dirección se elige **sola** (la más cercana dentro de su radio).
-2. La ventana de frío pasa de 90 a **20 minutos**, y el reloj arranca en el **despacho**, no al empacar.
-3. Hay **dos repartidores** de turno por tienda con capacidad limitada: si no hay o están saturados, la app **ofrece recojo** en lugar de prometer una entrega en 20 minutos.
+2. La meta de viaje pasa de 90 a **20 minutos**, y el reloj arranca en el **despacho**, no al empacar. *(Corregido después: ver «Aclaraciones» abajo; los 20 min son una meta, no un límite.)*
+3. Hay **dos repartidores** de turno por tienda. *(Corregido después: la app **no** rechaza ni desvía a recojo por carga; ver «Aclaraciones».)*
 4. La semilla ficticia se corrige: **plantas en Chota y Chiclayo**; solo Trujillo vende en línea en el piloto.
 5. Inventario operativo y POS de mostrador (etapa 4B): **la app es el sistema de inventario**, no se integra con uno ajeno.
 
@@ -77,4 +77,19 @@ El cuestionario v2 sigue disponible, pero las preguntas se entregarán **ordenad
 - Máximo de **2 pedidos de entrega por repartidor** a la vez.
 - Los repartidores quedan asignados a **una tienda** (no se comparten entre tiendas).
 - La distancia de 4 km se mide **en línea recta**, no por calle (hasta tener mapas).
+
+### Aclaraciones del propietario (corrigen mi interpretación de la tanda 3)
+| Tema | Aclaración |
+|------|-----------|
+| 20 minutos | Son el **tiempo ideal de reparto** (la meta). **Se pueden extender**, y lo que se hace es **avisar al cliente el tiempo aproximado**. |
+| Rechazar repartos | **No está en sus planes rechazar un reparto ni ofrecer recojo en tienda** por falta de capacidad. La entrega siempre se acepta (dentro de la cobertura de 4 km). |
+| Límite crítico de frío | **Sin límite crítico por ahora**: solo semáforo (verde hasta 20 min, ámbar «demorado» después). |
+| Pedido mínimo | **No hay.** El cliente puede pedir, por ejemplo, 250 g de mantequilla y **se le agrega el costo de reparto**. *«No queremos friccionar: el usuario no tiene la obligación de comprar de más.»* |
+
+**Lo que estaba mal en la etapa 4A (ya corregido en 4A.1):** traté los 20 min como límite duro; rechacé pedidos con `REPARTO_SATURADO`/`SIN_REPARTIDORES` y empujaba al recojo; impedía despachar sin repartidores; y puse un pedido mínimo de S/ 25 (y un envío gratis desde S/ 90) en los datos de muestra que **nadie había pedido**.
+
+**Se mantiene:** radio de **4 km** como cobertura (fuera de él no hay reparto; se informa y el recojo queda como una opción más).
+
+### Supuestos propios a confirmar (actualizado)
+Se **retira** el supuesto de «máximo 2 pedidos por repartidor» como tope. Ahora son parámetros del **tiempo estimado** (hipótesis hasta medir): 8 min para alistar un pedido, ciclo de repartidor de 35 min (viaje + vuelta), 2 pedidos por viaje, +30 min si no hay nadie de turno, tarifa plana de S/ 6,00 (muestra) y **sin** envío gratis definido.
 

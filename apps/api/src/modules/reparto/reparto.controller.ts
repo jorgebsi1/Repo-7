@@ -53,7 +53,7 @@ export class RepartoController {
     const ids = [...enRutaRows, ...porSalirRows].map((r) => r.p.id);
     const lineas = ids.length ? await this.db.select().from(lineaPedido).where(inArray(lineaPedido.pedidoId, ids)) : [];
     const card = (r: (typeof enRutaRows)[number]) => {
-      const st = r.e.despachadoEn ? coldChainStatus(r.e.despachadoEn, now, this.cfg.maxMinutesOutOfFridge) : null;
+      const st = r.e.despachadoEn ? coldChainStatus(r.e.despachadoEn, now, this.cfg.idealTripMinutes) : null;
       return {
         id: r.p.id,
         numero: r.p.numero,
@@ -65,10 +65,10 @@ export class RepartoController {
         totalFinalCents: r.p.totalFinalCents,
         limiteFrioEn: st?.limite ?? null,
         minutosRestantes: st?.minutosRestantes ?? null,
-        excedido: st?.excedido ?? false,
+        demorado: st?.demorado ?? false,
       };
     };
-    return { enTurno, maxMinutosFrio: this.cfg.maxMinutesOutOfFridge, enRuta: enRutaRows.map(card), porSalir: porSalirRows.map(card) };
+    return { enTurno, metaViajeMin: this.cfg.idealTripMinutes, enRuta: enRutaRows.map(card), porSalir: porSalirRows.map(card) };
   }
 
   @Post('turno')

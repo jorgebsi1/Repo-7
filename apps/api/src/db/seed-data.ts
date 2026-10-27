@@ -12,10 +12,9 @@ interface DemoUbicacion {
   lat?: number;
   lng?: number;
   aceptaOnline: boolean;
-  /** Reparto (solo tiendas): radio máximo en km, tarifa plana y mínimos en céntimos. */
+  /** Reparto (solo tiendas): radio máximo en km y tarifa plana en céntimos (valores de MUESTRA; sin pedido mínimo). */
   radioEntregaKm?: number;
   tarifaEntregaCents?: number;
-  pedidoMinimoEntregaCents?: number;
   envioGratisDesdeCents?: number;
 }
 
@@ -26,8 +25,8 @@ interface DemoUbicacion {
 export const DEMO_UBICACIONES: DemoUbicacion[] = [
   { codigo: 'PLANTA-CHOTA', nombre: '[DEMO] Planta Chota', tipo: 'PLANTA', ciudad: 'Chota', direccion: 'Dirección por definir', lat: -6.5586, lng: -78.6486, aceptaOnline: false },
   { codigo: 'PLANTA-CHICLAYO', nombre: '[DEMO] Planta Chiclayo', tipo: 'PLANTA', ciudad: 'Chiclayo', direccion: 'Dirección por definir', lat: -6.7714, lng: -79.8409, aceptaOnline: false },
-  { codigo: 'TRU-CAS', nombre: '[DEMO] Prolac Las Casuarinas', tipo: 'TIENDA', ciudad: 'Trujillo', direccion: 'Urb. Las Casuarinas, Trujillo', lat: -8.1342, lng: -79.0268, aceptaOnline: true, radioEntregaKm: 4, tarifaEntregaCents: 600, pedidoMinimoEntregaCents: 2500, envioGratisDesdeCents: 9000 },
-  { codigo: 'TRU-02', nombre: '[DEMO] Prolac Trujillo 2', tipo: 'TIENDA', ciudad: 'Trujillo', direccion: 'Dirección por definir', lat: -8.1118, lng: -79.0287, aceptaOnline: true, radioEntregaKm: 4, tarifaEntregaCents: 500, pedidoMinimoEntregaCents: 2000 },
+  { codigo: 'TRU-CAS', nombre: '[DEMO] Prolac Las Casuarinas', tipo: 'TIENDA', ciudad: 'Trujillo', direccion: 'Urb. Las Casuarinas, Trujillo', lat: -8.1342, lng: -79.0268, aceptaOnline: true, radioEntregaKm: 4, tarifaEntregaCents: 600 },
+  { codigo: 'TRU-02', nombre: '[DEMO] Prolac Trujillo 2', tipo: 'TIENDA', ciudad: 'Trujillo', direccion: 'Dirección por definir', lat: -8.1118, lng: -79.0287, aceptaOnline: true, radioEntregaKm: 4, tarifaEntregaCents: 500 },
   { codigo: 'CHI-01', nombre: '[DEMO] Prolac Chiclayo 1', tipo: 'TIENDA', ciudad: 'Chiclayo', direccion: 'Dirección por definir', lat: -6.7714, lng: -79.8409, aceptaOnline: false },
   { codigo: 'CHI-02', nombre: '[DEMO] Prolac Chiclayo 2', tipo: 'TIENDA', ciudad: 'Chiclayo', direccion: 'Dirección por definir', lat: -6.7766, lng: -79.8447, aceptaOnline: false },
   { codigo: 'LIM-01', nombre: '[DEMO] Prolac Lima 1', tipo: 'TIENDA', ciudad: 'Lima', direccion: 'Dirección por definir', lat: -12.0464, lng: -77.0428, aceptaOnline: false },

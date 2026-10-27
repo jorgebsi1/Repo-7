@@ -15,8 +15,8 @@ flowchart LR
     ORD[orders<br/>única dueña del estado]
     FUL[fulfillment<br/>alistar · pesar · empacar]
     PAY[payments<br/>proveedor simulado]
-    DEL[delivery<br/>radio 4 km · capacidad]
-    REP[reparto<br/>turnos · cooler 20 min]
+    DEL[delivery<br/>radio 4 km · tiempo estimado]
+    REP[reparto<br/>turnos · meta 20 min]
     NOT[notifications<br/>stub]
     ACC[accounts<br/>login de desarrollo]
   end
@@ -84,17 +84,19 @@ Cabecera con tienda y conmutador Recojo/Entrega, barra inferior, chips de catego
 - `pnpm dev` arranca API y web sin Docker con datos de muestra.
 - No verificado: la PWA instalada en un teléfono real, pruebas de carga, accesibilidad con lector de pantalla y el comportamiento sin conexión.
 
-## 7. Etapa 4A · Reparto y frío (tanda 3)
-**Reglas nuevas** (ver `12` tanda 3):
-- **Cobertura por radio:** cada tienda cubre hasta **4 km** en línea recta (`ubicacion.radio_entrega_km`, tarifa y mínimos por tienda). Entre las tiendas que cubren una dirección se elige **la más cercana** automáticamente (`packages/domain/src/delivery.ts`). Si ninguna llega, se informa a qué distancia está la más cercana.
-- **Cooler y 20 minutos:** el reloj **arranca cuando el repartidor sale** (`despachar`), no al empacar. Se guarda `entrega.limite_frio_en`; entregar tarde se **permite pero se registra** (`entrega.fuera_de_frio` y el evento).
-- **Capacidad:** con 2 repartidores y máximo 2 pedidos de entrega cada uno (supuesto), el pedido de entrega 5 se rechaza con `REPARTO_SATURADO`; sin repartidores de turno, `SIN_REPARTIDORES`. En ambos casos la app ofrece **recojo**.
-- **Asignación:** al salir, el pedido va al repartidor de turno **con menos pedidos en ruta** (desempate por quien lleva más tiempo libre y, al final, por id). Si sale el propio repartidor, queda asignado a él.
+## 7. Etapa 4A / 4A.1 · Reparto y frío (tanda 3 y aclaraciones)
+**Reglas vigentes** (ver `12` tanda 3 y «Aclaraciones del propietario»):
+- **Cobertura por radio:** cada tienda cubre hasta **4 km** en línea recta (`ubicacion.radio_entrega_km`). Entre las tiendas que cubren una dirección se elige **la más cercana** automáticamente (`packages/domain/src/delivery.ts`). **Es la única razón para no repartir**: si ninguna llega, se informa la distancia a la tienda más cercana y el recojo queda como una opción más.
+- **Nunca se rechaza una entrega por carga ni por monto.** No hay pedido mínimo: se suma la tarifa de reparto (plana por tienda). No hay `REPARTO_SATURADO`, `SIN_REPARTIDORES` ni `BAJO_PEDIDO_MINIMO`.
+- **Tiempo estimado al cliente** (`packages/domain/src/estimate.ts`): `alistado en cola + espera de repartidor + viaje ideal`, mostrado como **rango redondeado de 5 en 5 min** y un nivel de carga (`NORMAL`/`ALTA`). Se guarda lo prometido en `pedido.entrega_estimada_en` para medir *prometido vs. real*. Sin repartidores de turno se estima con un colchón y el pedido igual entra.
+- **Meta de 20 minutos (semáforo, no límite):** el reloj arranca cuando el repartidor **sale** (`despachar`); verde dentro de la meta, ámbar **«demorado»** después. **No hay nivel crítico.** Entregar tarde solo se registra (`entrega.demorado` y el evento) y se avisa.
+- **Asignación:** al salir, el pedido va al repartidor de turno **con menos pedidos en ruta** (aunque ya lleve varios); si nadie está de turno, **sale sin repartidor asignado** y lo entrega la tienda.
 - **Pedidos por mayor / plantas:** fuera del piloto; las plantas existen como ubicaciones pero no aparecen en la app.
 
-**Piezas nuevas:** `GET /v1/reparto/pedidos` y `POST /v1/reparto/turno` (vista del repartidor), `GET /v1/tienda/reparto` (resumen del panel), `POST /v1/entrega/resolver` (qué tienda atiende una dirección), tabla `repartidor_turno`, migraciones `0001`/`0002`, pantalla `/reparto` y cuenta regresiva (`ColdTimer`) para el repartidor, la tienda y el cliente.
+**Parámetros del estimado (hipótesis, `BusinessConfig`):** `prepMinutesPerOrder` 8 (supone una sola persona alistando), `courierCycleMinutes` 35, `pedidosPorViaje` 2, `noCourierBufferMinutes` 30, `idealTripMinutes` 20, `etaRoundingMinutes` 5.
 
-**Verificación:** dominio 47 pruebas; API 38 pruebas (34 e2e también contra PostgreSQL 17 real); recorrido en Chromium con entrega a domicilio, dirección fuera de cobertura y cuenta regresiva (capturas 10–16).
+**Piezas:** `POST /v1/entrega/resolver`, `GET /v1/reparto/pedidos` y `POST /v1/reparto/turno` (vista del repartidor), `GET /v1/tienda/reparto` (carga, alertas y promesas vencidas), tabla `repartidor_turno`, migraciones `0001`–`0004`, pantalla `/reparto`, `ColdTimer` (verde/ámbar).
 
-**Limitaciones de 4A:** la distancia en línea recta subestima la de calle; los repartidores pertenecen a una tienda (en el piloto, Las Casuarinas); una carrera entre dos pedidos simultáneos puede dejar pasar uno más de lo que indica la capacidad (no hay bloqueo sobre el conteo de capacidad); `maxPedidosPorRepartidor = 2` es un supuesto; no hay compensación automática por entrega tardía (solo se registra y se avisa).
+**Verificación:** dominio 52 pruebas; API 42 pruebas (los 38 e2e de pedidos también contra PostgreSQL 17 real); recorrido en Chromium con entrega, cobertura, 6 pedidos de entrega en cola y sin repartidores de turno (capturas 10–19).
 
+**Limitaciones:** la distancia en línea recta subestima la de calle; el estimado es un modelo simple con parámetros sin medir (con 7 pedidos en cola y nadie de turno mostró 110–120 min); no hay compensación automática por demora; los repartidores pertenecen a una sola tienda; sin pedido mínimo, un pedido muy chico con la tarifa plana puede tener un costo de reparto desproporcionado: **la tarifa real está por definir**.

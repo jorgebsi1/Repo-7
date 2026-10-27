@@ -125,8 +125,6 @@ export class CartService {
       if (entrega.ok) {
         ubicacionId = entrega.ubicacionId;
         tarifa = entrega.tarifaCents;
-      } else if ('ubicacionId' in entrega && entrega.ubicacionId) {
-        ubicacionId = entrega.ubicacionId;
       } else if ('masCercana' in entrega && entrega.masCercana) {
         ubicacionId = ubicacionId ?? entrega.masCercana.ubicacionId; // solo para mostrar disponibilidad
       }
@@ -148,6 +146,8 @@ export class CartService {
       ubicacionId,
       tienda: { id: u.id, nombre: u.nombre, ciudad: u.ciudad },
       distanciaKm: entrega && entrega.ok ? Math.round(entrega.distanciaKm * 10) / 10 : null,
+      /** Tiempo aproximado de entrega que se le muestra al cliente (solo entregas dentro de cobertura). */
+      entregaEstimada: entrega && entrega.ok && entrega.estimado ? { minMin: entrega.estimado.minMin, maxMin: entrega.estimado.maxMin, nivelCarga: entrega.estimado.nivelCarga, sinRepartidores: entrega.estimado.sinRepartidores } : null,
       modo: input.modo as FulfillmentMode,
       lineas,
       subtotalCents: estimado.subtotalCents,

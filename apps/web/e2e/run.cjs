@@ -188,6 +188,54 @@ function assert(cond, msg) {
     await c.screenshot({ path: `${OUT}/16-entrega-completada.png` });
     assert(true, 'Entrega a domicilio completada dentro de la ventana de frío');
 
+    // ───── Nunca se rechaza una entrega: con mucha carga o sin repartidores solo sube el tiempo estimado ─────
+    const api = async (path, { token, body, method } = {}) => {
+      const r = await fetch(`${API}${path}`, { method: method ?? (body ? 'POST' : 'GET'), headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body && body.__idem ? { 'Idempotency-Key': body.__idem } : {}) }, body: body ? JSON.stringify(body) : undefined });
+      return { status: r.status, body: await r.json().catch(() => ({})) };
+    };
+    const login = async (telefono) => (await api('/v1/auth/login', { body: { telefono, codigo: '123456' } })).body.token;
+    const tCliente = await login('+51900000001');
+    const tTienda = await login('+51900000002');
+    const tRep1 = await login('+51900000003');
+    const tRep2 = await login('+51900000005');
+    const ubic = (await api('/v1/ubicaciones')).body;
+    const tiendaId = ubic.find((u) => u.codigo === 'TRU-CAS').id;
+    const cat = (await api(`/v1/ubicaciones/${tiendaId}/catalogo`)).body;
+    const moz = cat.categorias.flatMap((x) => x.productos).flatMap((p) => p.skus).find((x) => x.codigo === 'QUE-MOZ-500').id;
+    const dir = { linea: 'Av. Carga 1', lat: -8.133, lng: -79.03 };
+    let aceptados = 0;
+    for (let i = 0; i < 6; i++) {
+      const r = await api('/v1/pedidos', { token: tCliente, body: { __idem: `e2e-carga-${Date.now()}-${i}`, ubicacionId: tiendaId, modo: 'ENTREGA', lineas: [{ skuId: moz, cantidad: 1 }], direccion: dir, pago: { token: 'tok_ok' } } });
+      if (r.status === 201) aceptados++;
+    }
+    assert(aceptados === 6, 'Con la carga subiendo, los 6 pedidos de entrega fueron aceptados (ninguno rechazado)');
+
+    await c.goto(WEB);
+    await c.getByRole('group', { name: 'Modo de entrega' }).getByRole('button', { name: 'Entrega a domicilio' }).click();
+    await c.getByRole('link', { name: /Mantequilla sin sal/ }).first().click();
+    await c.getByRole('button', { name: /Añadir · S\/ 14\.90/ }).click(); // un pedido chico: 250 g de mantequilla
+    await c.getByRole('link', { name: /Ver carrito/ }).click();
+    await c.getByRole('button', { name: /Ir a pagar/ }).click();
+    await c.getByRole('heading', { name: 'Finalizar pedido' }).waitFor();
+    await c.getByRole('button', { name: 'Las Casuarinas (cerca de la tienda)' }).click();
+    await c.getByText(/Entrega estimada:/).waitFor();
+    await c.getByText(/Hoy hay más pedidos de lo normal/).waitFor();
+    assert(!(await c.getByRole('button', { name: /Confirmar pedido/ }).isDisabled()), 'Pedido chico (S/ 14.90) con mucha carga: se puede confirmar, con tiempo estimado mayor y sin pedido mínimo');
+    await c.screenshot({ path: `${OUT}/17-checkout-carga-alta.png` });
+    assert((await c.getByText(/saturad|solo recojo|no podemos entregar|sin repartidores/i).count()) === 0, 'Ningún mensaje de rechazo ni de "solo recojo"');
+    await c.getByRole('button', { name: /Confirmar pedido/ }).click();
+    await c.waitForURL(/\/pedido\//);
+    await c.getByText(/Llegada aproximada:/).waitFor();
+    await c.screenshot({ path: `${OUT}/18-pedido-llegada-aproximada.png` });
+
+    await api('/v1/reparto/turno', { token: tRep1, body: { enTurno: false } });
+    await api('/v1/reparto/turno', { token: tRep2, body: { enTurno: false } });
+    await t.goto(`${WEB}/panel`);
+    await t.getByRole('alert').getByText(/No hay repartidores de turno/).waitFor();
+    await t.screenshot({ path: `${OUT}/19-panel-sin-repartidores.png` });
+    const sinRep = await api('/v1/pedidos', { token: tCliente, body: { __idem: `e2e-sinrep-${Date.now()}`, ubicacionId: tiendaId, modo: 'ENTREGA', lineas: [{ skuId: moz, cantidad: 1 }], direccion: dir, pago: { token: 'tok_ok' } } });
+    assert(sinRep.status === 201, 'Sin repartidores de turno el pedido de entrega igual se acepta (la tienda ve la alerta)');
+
     // PWA instalable: manifiesto e íconos accesibles
     const m = await (await fetch(`${WEB}/manifest.webmanifest`)).json();
     assert(m.name && m.icons.length >= 2 && m.display === 'standalone', 'Manifiesto PWA válido');

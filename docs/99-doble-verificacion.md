@@ -155,3 +155,43 @@ La entrega a domicilio funciona de punta a punta con reglas reales de Prolac (4 
 - **Pruebas de usuario reales:** ninguna; los tiempos de 20 minutos solo se probaron con un reloj simulado.
 - Los datos de tiendas, coordenadas y tarifas siguen siendo **ficticios** hasta que se entregue la pregunta 46.
 - La etapa 4B (POS e inventario en tiempo real) **no está construida**: hoy el stock sigue siendo el esqueleto de la etapa 3.
+
+---
+
+# Etapa 4A.1 · Corrección: nunca rechazar una entrega
+
+## 1. Qué estaba mal (reconocido)
+En la etapa 4A interpreté mal tus respuestas y construí reglas que **no pediste**:
+- Traté los **20 min como límite duro** (tú dijiste que son el tiempo ideal y se pueden extender).
+- **Rechazaba entregas** por reparto saturado o sin repartidores, y empujaba al recojo (tú dijiste que no está en tus planes).
+- Impedía despachar si no había repartidores.
+- Puse un **pedido mínimo de S/ 25** y un **envío gratis desde S/ 90** en los datos de muestra, que nadie había definido.
+- Mi propio resumen de 4A anunciaba «el pedido 5 se rechaza», y la doble verificación lo marcó como correcto: **verifiqué contra mi interpretación, no contra lo que dijiste**.
+
+## 2. Qué hicimos
+- **Dominio:** se quitó la capacidad y el pedido mínimo; la meta de viaje es un semáforo (verde/ámbar «demorado», sin nivel crítico); nuevo **tiempo estimado** (rango, nivel de carga, sin repartidores incluido).
+- **Datos:** migraciones `0003` y `0004` (se quita el mínimo; `demorado`; `entrega_estimada_en`); la semilla ya no inventa mínimo ni envío gratis.
+- **API:** la cotización y el pedido traen el tiempo estimado y se guarda lo prometido; despachar nunca falla (menos cargado o sin asignar); panel con carga, alerta de «sin repartidores» y promesas vencidas.
+- **App:** «Entrega estimada: 75–85 min» con aviso de carga alta, sin mensajes de rechazo; «Llegada aproximada» en el seguimiento; semáforo ámbar en lugar de alarma; panel sin «solo recojo».
+
+## 3. Checklist verificado (esta vez contra lo que dijiste)
+| Verificación | Resultado |
+|--------------|-----------|
+| Dominio: 52 pruebas (estimado crece con la cola, baja con más repartidores, existe sin repartidores; semáforo sin nivel crítico; pedidos chicos con tarifa sumada) | ✅ |
+| API: 42 pruebas con PGlite; los 38 e2e de pedidos también contra **PostgreSQL 17 real** (migraciones 0003–0004 incluidas) | ✅ |
+| 8 pedidos de entrega seguidos con 2 repartidores: **todos aceptados**, el estimado sube y el nivel pasa a ALTA | ✅ |
+| Sin repartidores de turno: el pedido entra; despachar funciona (sale sin asignar, lo entrega la tienda) | ✅ |
+| Con repartidores muy cargados: se despacha igual, repartido entre los dos (3 y 3 con 6 pedidos) | ✅ |
+| 250 g de mantequilla con entrega: aceptado, total = producto + reparto (S/ 14.90 + S/ 6.00) | ✅ |
+| 3 horas después: el panel muestra pedidos con **promesa vencida** y en ruta como «demorado» | ✅ |
+| A 4,1 km sigue sin haber reparto (cobertura definida por el propietario) | ✅ |
+| Recorrido real en Chromium: 6 pedidos en cola aceptados; checkout con carga alta («75–85 min») confirmable; sin mensajes de rechazo; alerta en el panel sin repartidores (capturas 17–19, revisadas) | ✅ |
+| `pnpm typecheck` y `pnpm build` | ✅ |
+
+## 4. Huecos y limitaciones conocidas
+- **El tiempo estimado es un modelo simple con parámetros sin medir** (8 min por pedido con una sola persona alistando, ciclo de 35 min, 2 pedidos por viaje). Con 7 pedidos en cola y nadie de turno llegó a mostrar 110–120 min. Hay que medir en el piloto y ajustar; se guarda lo prometido para poder compararlo con lo real.
+- **Sin rechazos, la carga ya no se autorregula:** el cliente solo ve el tiempo creciente. La decisión de poner más repartidores o más personal de alistado depende de que la tienda mire la alerta del panel.
+- **La tarifa plana (S/ 6,00) es de muestra.** Sin pedido mínimo, en un pedido muy chico el reparto puede costar casi tanto como el producto; la tarifa real y si habrá envío gratis están **por definir**.
+- Fuera de 4 km sigue sin haber reparto y se informa con un mensaje amable y el recojo como opción; si prefieres ampliar la cobertura con tarifa mayor, es una decisión pendiente.
+- Los repartidores pertenecen a una sola tienda; no hay compensación automática por demora; la distancia sigue siendo en línea recta.
+- La etapa 4B (POS de mostrador e inventario en tiempo real) **sigue sin construirse**.

@@ -1,7 +1,7 @@
 # Prolac — venta en línea de lácteos (esqueleto)
 
 Esqueleto de la app de pedidos de **Prolac** (fabricante-minorista de lácteos con tiendas en Trujillo, Chiclayo y Lima).
-Es la **estructura del edificio** (reparto por radio de 4 km con cooler de 20 min incluido): la lógica, los datos y las pantallas funcionan de punta a punta con **datos de muestra ficticios**; los acabados (catálogo real, fotos, marca, pagos reales) vienen después.
+Es la **estructura del edificio** (reparto por radio de 4 km, cooler y tiempo estimado al cliente; nunca se rechaza una entrega): la lógica, los datos y las pantallas funcionan de punta a punta con **datos de muestra ficticios**; los acabados (catálogo real, fotos, marca, pagos reales) vienen después.
 
 > Contexto, decisiones y análisis (incluida la ingeniería inversa de Uber Eats): ver [`docs/`](docs/00-resumen-ejecutivo.md).
 > Qué existe y qué es provisional: [`docs/14-arquitectura-del-esqueleto.md`](docs/14-arquitectura-del-esqueleto.md).
@@ -21,10 +21,10 @@ Tarjetas de prueba en el pago: *aprobada* y *rechazada* (no se cobra dinero real
 ## Comandos
 | Comando | Qué hace |
 |---------|----------|
-| `pnpm test` | Pruebas del dominio (47) y de la API (38, incluidas e2e) |
+| `pnpm test` | Pruebas del dominio (52) y de la API (42, incluidas e2e) |
 | `pnpm typecheck` | Tipos de todo el monorepo |
 | `pnpm build` | Compila paquetes, API y app |
-| `pnpm --filter @prolac/web e2e` | Recorrido real en Chromium (compra por peso, entrega a domicilio con repartidor y cooler de 20 min) con capturas en `apps/web/e2e-output/` (requiere `pnpm build` y Playwright) |
+| `pnpm --filter @prolac/web e2e` | Recorrido real en Chromium (compra por peso, entrega a domicilio, carga alta y sin repartidores) con capturas en `apps/web/e2e-output/` (requiere `pnpm build` y Playwright) |
 | `pnpm seed` | Carga datos de muestra si la base está vacía |
 | `pnpm import:catalog <archivo.csv>` | Importa el catálogo real (plantilla: `apps/api/data/catalogo-plantilla.csv`) |
 
@@ -38,7 +38,7 @@ Sin `DATABASE_URL` la API usa PGlite (Postgres en WASM) en `.data/`.
 
 ## Estructura
 ```
-packages/domain     reglas puras: estados del pedido, precios por pack/peso, FEFO, reservas, cobertura por radio, frío de 20 min, capacidad de reparto
+packages/domain     reglas puras: estados del pedido, precios por pack/peso, FEFO, reservas, cobertura por radio, meta de 20 min, tiempo estimado de entrega
 packages/ui-tokens  tokens de diseño provisionales (cambiar aquí = cambiar la app)
 apps/api            NestJS + Drizzle: catálogo, inventario, carrito, pedidos, pagos (simulados), tienda, entrega
 apps/web            Next.js (PWA): app del cliente y panel de tienda en /panel

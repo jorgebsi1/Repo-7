@@ -63,15 +63,17 @@ export interface QuoteLine {
   autorizadoCents: number;
 }
 
+export interface EntregaEstimada {
+  minMin: number;
+  maxMin: number;
+  nivelCarga: 'NORMAL' | 'ALTA';
+  sinRepartidores: boolean;
+}
+
+/** La única razón para no repartir es estar fuera de la cobertura de 4 km: ni la carga ni el monto rechazan una entrega. */
 export type EntregaQuote =
   | { ok: true; ubicacionId: string; nombre: string; distanciaKm: number; tarifaCents: number }
-  | {
-      ok: false;
-      reason: string;
-      ubicacionId?: string;
-      pedidoMinimoCents?: number;
-      masCercana?: { ubicacionId: string; nombre: string; distanciaKm: number };
-    }
+  | { ok: false; reason: string; masCercana?: { ubicacionId: string; nombre: string; distanciaKm: number } }
   | null;
 
 export interface QuoteDto {
@@ -79,6 +81,8 @@ export interface QuoteDto {
   ubicacionId: string;
   tienda: { id: string; nombre: string; ciudad: string };
   distanciaKm: number | null;
+  /** Tiempo aproximado de entrega (rango en minutos). Solo en entregas dentro de cobertura. */
+  entregaEstimada: EntregaEstimada | null;
   lineas: QuoteLine[];
   subtotalCents: number;
   tarifaEntregaCents: number;
@@ -128,10 +132,13 @@ export interface PedidoDto {
     despachadoEn: string | null;
     entregadoEn: string | null;
     limiteFrioEn: string | null;
-    fueraDeFrio: boolean;
+    /** Pasó de la meta de 20 min (semáforo ámbar, no una falla). */
+    demorado: boolean;
+    nivel: 'EN_TIEMPO' | 'DEMORADO' | null;
     minutosRestantes: number | null;
-    excedido: boolean;
   } | null;
+  /** Hora aproximada de llegada que se le prometió al cliente (solo entregas). */
+  entregaEstimadaEn: string | null;
   pasos: string[];
   pasoActual: number;
   acciones: string[];
@@ -173,22 +180,25 @@ export interface RepartoCard {
   totalFinalCents: number | null;
   limiteFrioEn: string | null;
   minutosRestantes: number | null;
-  excedido: boolean;
+  demorado: boolean;
 }
 
 export interface RepartoDto {
   enTurno: boolean;
-  maxMinutosFrio: number;
+  metaViajeMin: number;
   enRuta: RepartoCard[];
   porSalir: RepartoCard[];
 }
 
 export interface TiendaRepartoDto {
   repartidores: { id: string; nombre: string; enRuta: number }[];
-  pedidosActivos: number;
-  capacidadMaxima: number;
-  aceptaEntregas: boolean;
-  motivoNoAcepta: string | null;
-  maxMinutosFrio: number;
-  enRuta: { pedidoId: string; numero: number; repartidor: string | null; limiteFrioEn: string | null; minutosRestantes: number | null; excedido: boolean }[];
+  sinRepartidores: boolean;
+  pedidosPorAlistar: number;
+  pedidosEsperandoSalir: number;
+  nivelCarga: 'NORMAL' | 'ALTA';
+  /** Lo que vería hoy un cliente nuevo. */
+  estimadoNuevo: { minMin: number; maxMin: number };
+  metaViajeMin: number;
+  enRuta: { pedidoId: string; numero: number; repartidor: string | null; limiteFrioEn: string | null; minutosRestantes: number | null; demorado: boolean }[];
+  conPromesaVencida: { pedidoId: string; numero: number; prometidoEn: string | null }[];
 }

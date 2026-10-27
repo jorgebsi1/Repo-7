@@ -1,11 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray, desc } from 'drizzle-orm';
+import { and, desc, eq, inArray, lt } from 'drizzle-orm';
 import {
   coldChainStatus,
-  deliveryCapacity,
+  deliveryEstimate,
   resolveDelivery,
   type CourierLoad,
+  type DeliveryEstimate,
   type DeliveryQuote,
+  type EstimateParams,
   type LngLat,
   type StoreDelivery,
 } from '@prolac/domain';
@@ -15,12 +17,12 @@ import { BUSINESS_CONFIG, CLOCK, DB, type BusinessConfig, type Clock } from '../
 
 type Q = Db | Tx;
 
-/** Pedidos de entrega que ya ocupan capacidad de reparto de la tienda. */
-export const ESTADOS_REPARTO_ACTIVO = ['CONFIRMADO', 'ALISTANDO', 'FALTANTE', 'EMPACADO', 'EN_CAMINO'] as const;
+/** Pedidos de entrega que aún no han salido de la tienda: son los que están "delante" de uno nuevo. */
+const ESTADOS_POR_ALISTAR = ['CONFIRMADO', 'ALISTANDO', 'FALTANTE'] as const;
+const ESTADOS_POR_SALIR = ['EMPACADO'] as const;
 
-export type DeliveryResolution =
-  | DeliveryQuote
-  | { ok: false; reason: 'SIN_REPARTIDORES' | 'REPARTO_SATURADO'; ubicacionId: string };
+/** Entregar nunca se rechaza por carga: la cotización solo trae el tiempo estimado que verá el cliente. */
+export type DeliveryResolution = DeliveryQuote & { estimado?: DeliveryEstimate };
 
 export interface CourierRow extends CourierLoad {
   nombre: string;
@@ -33,6 +35,17 @@ export class DeliveryService {
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(BUSINESS_CONFIG) private readonly cfg: BusinessConfig,
   ) {}
+
+  private estimateParams(): EstimateParams {
+    return {
+      idealTripMinutes: this.cfg.idealTripMinutes,
+      prepMinutesPerOrder: this.cfg.prepMinutesPerOrder,
+      courierCycleMinutes: this.cfg.courierCycleMinutes,
+      ordersPerTrip: this.cfg.pedidosPorViaje,
+      noCourierBufferMinutes: this.cfg.noCourierBufferMinutes,
+      roundingMinutes: this.cfg.etaRoundingMinutes,
+    };
+  }
 
   /** Tiendas con venta en línea y coordenadas: las únicas que pueden atender una entrega. */
   async tiendasConReparto(): Promise<StoreDelivery[]> {
@@ -48,7 +61,6 @@ export class DeliveryService {
         ubicacion: [u.lng!, u.lat!] as LngLat,
         radioKm: u.radioEntregaKm,
         tarifaCents: u.tarifaEntregaCents,
-        pedidoMinimoCents: u.pedidoMinimoEntregaCents,
         envioGratisDesdeCents: u.envioGratisDesdeCents ?? undefined,
       }));
   }
@@ -79,40 +91,42 @@ export class DeliveryService {
     });
   }
 
-  async pedidosActivos(q: Q, ubicacionId: string): Promise<number> {
+  private async contarEntregas(q: Q, ubicacionId: string, estados: readonly (typeof pedido.$inferSelect.estado)[]): Promise<number> {
     const rows = await q
       .select({ id: pedido.id })
       .from(pedido)
-      .where(and(eq(pedido.ubicacionId, ubicacionId), eq(pedido.modo, 'ENTREGA'), inArray(pedido.estado, [...ESTADOS_REPARTO_ACTIVO])));
+      .where(and(eq(pedido.ubicacionId, ubicacionId), eq(pedido.modo, 'ENTREGA'), inArray(pedido.estado, [...estados])));
     return rows.length;
   }
 
-  async capacidad(ubicacionId: string) {
-    const [couriers, activos] = await Promise.all([this.courierLoads(this.db, ubicacionId), this.pedidosActivos(this.db, ubicacionId)]);
-    return {
-      couriers,
-      pedidosActivos: activos,
-      maxPorRepartidor: this.cfg.maxPedidosPorRepartidor,
-      resultado: deliveryCapacity({ repartidoresEnTurno: couriers.length, pedidosActivos: activos, maxPorRepartidor: this.cfg.maxPedidosPorRepartidor }),
-    };
+  /** Carga actual de la tienda y el tiempo estimado que se le mostraría a un cliente nuevo. */
+  async carga(ubicacionId: string) {
+    const [couriers, porAlistar, porSalir] = await Promise.all([
+      this.courierLoads(this.db, ubicacionId),
+      this.contarEntregas(this.db, ubicacionId, ESTADOS_POR_ALISTAR),
+      this.contarEntregas(this.db, ubicacionId, ESTADOS_POR_SALIR),
+    ]);
+    const estimado = deliveryEstimate(
+      { pedidosPorAlistar: porAlistar, pedidosEsperandoSalir: porSalir, repartidoresEnTurno: couriers.length },
+      this.estimateParams(),
+    );
+    return { couriers, porAlistar, porSalir, estimado };
   }
 
   /**
-   * Qué tienda atiende una dirección: la más cercana dentro de su radio, con pedido mínimo y capacidad de reparto.
-   * Los pedidos por mayor (desde planta) no entran al piloto.
+   * Qué tienda atiende una dirección y cuánto tardaría. La única razón para no repartir es estar
+   * fuera del radio de cobertura: ni la carga ni el tamaño del pedido rechazan una entrega.
    */
   async resolver(punto: LngLat, subtotalCents: number): Promise<DeliveryResolution> {
     const q = resolveDelivery(await this.tiendasConReparto(), punto, subtotalCents);
     if (!q.ok) return q;
-    const cap = await this.capacidad(q.ubicacionId);
-    if (!cap.resultado.ok) return { ok: false, reason: cap.resultado.reason, ubicacionId: q.ubicacionId };
-    return q;
+    return { ...q, estimado: (await this.carga(q.ubicacionId)).estimado };
   }
 
-  /** Resumen para el panel de la tienda: repartidores en turno y pedidos en ruta con su cuenta de frío. */
+  /** Resumen para el panel de la tienda: carga, repartidores, pedidos en ruta con semáforo y promesas vencidas. */
   async resumen(ubicacionId: string) {
     const now = this.clock.now();
-    const cap = await this.capacidad(ubicacionId);
+    const c = await this.carga(ubicacionId);
     const enRuta = await this.db
       .select({ p: pedido, e: entrega, repartidor: cliente.nombre })
       .from(pedido)
@@ -120,24 +134,39 @@ export class DeliveryService {
       .leftJoin(cliente, eq(cliente.id, entrega.repartidorId))
       .where(and(eq(pedido.ubicacionId, ubicacionId), eq(pedido.estado, 'EN_CAMINO')))
       .orderBy(desc(entrega.despachadoEn));
+    const atrasados = await this.db
+      .select({ id: pedido.id, numero: pedido.numero, prometido: pedido.entregaEstimadaEn })
+      .from(pedido)
+      .where(
+        and(
+          eq(pedido.ubicacionId, ubicacionId),
+          eq(pedido.modo, 'ENTREGA'),
+          inArray(pedido.estado, ['CONFIRMADO', 'ALISTANDO', 'FALTANTE', 'EMPACADO', 'EN_CAMINO']),
+          lt(pedido.entregaEstimadaEn, now),
+        ),
+      );
     return {
-      repartidores: cap.couriers.map((c) => ({ id: c.id, nombre: c.nombre, enRuta: c.enRuta })),
-      pedidosActivos: cap.pedidosActivos,
-      capacidadMaxima: cap.couriers.length * cap.maxPorRepartidor,
-      aceptaEntregas: cap.resultado.ok,
-      motivoNoAcepta: cap.resultado.ok ? null : cap.resultado.reason,
-      maxMinutosFrio: this.cfg.maxMinutesOutOfFridge,
+      repartidores: c.couriers.map((r) => ({ id: r.id, nombre: r.nombre, enRuta: r.enRuta })),
+      sinRepartidores: c.couriers.length === 0,
+      pedidosPorAlistar: c.porAlistar,
+      pedidosEsperandoSalir: c.porSalir,
+      nivelCarga: c.estimado.nivelCarga,
+      /** Lo que vería hoy un cliente nuevo. */
+      estimadoNuevo: { minMin: c.estimado.minMin, maxMin: c.estimado.maxMin },
+      metaViajeMin: this.cfg.idealTripMinutes,
       enRuta: enRuta.map((r) => {
-        const st = r.e.despachadoEn ? coldChainStatus(r.e.despachadoEn, now, this.cfg.maxMinutesOutOfFridge) : null;
+        const st = r.e.despachadoEn ? coldChainStatus(r.e.despachadoEn, now, this.cfg.idealTripMinutes) : null;
         return {
           pedidoId: r.p.id,
           numero: r.p.numero,
           repartidor: r.repartidor,
           limiteFrioEn: st?.limite ?? null,
           minutosRestantes: st?.minutosRestantes ?? null,
-          excedido: st?.excedido ?? false,
+          demorado: st?.demorado ?? false,
         };
       }),
+      /** Pedidos cuya hora prometida al cliente ya pasó y siguen sin entregarse. */
+      conPromesaVencida: atrasados.map((a) => ({ pedidoId: a.id, numero: a.numero, prometidoEn: a.prometido })),
     };
   }
 

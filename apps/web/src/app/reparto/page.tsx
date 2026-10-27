@@ -86,7 +86,7 @@ export default function Reparto() {
             <Pedido key={p.id} p={p}>
               {p.limiteFrioEn && (
                 <div className="flex items-center justify-between rounded-control bg-muted p-3">
-                  <span className="text-sm font-medium">Cooler · máx. {d.maxMinutosFrio} min</span>
+                  <span className="text-sm font-medium">Cooler · meta {d.metaViajeMin} min</span>
                   <ColdTimer limite={p.limiteFrioEn} big />
                 </div>
               )}
@@ -104,7 +104,7 @@ export default function Reparto() {
           {d.porSalir.map((p) => (
             <Pedido key={p.id} p={p}>
               <Button block disabled={busy || !d.enTurno} onClick={() => accion(p.id, 'despachar')} className="min-h-14">
-                Salir con este pedido (inicia los {d.maxMinutosFrio} min)
+                Salir con este pedido (inicia la meta de {d.metaViajeMin} min)
               </Button>
               {!d.enTurno && <p className="text-xs text-ink-soft">Inicia tu turno para poder salir.</p>}
             </Pedido>

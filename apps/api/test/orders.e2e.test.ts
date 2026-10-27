@@ -253,9 +253,30 @@ describe('API de pedidos (e2e, PGlite en memoria)', () => {
       expect(chi.body.code).toBe('FUERA_DE_COBERTURA');
     });
 
-    it('pedido mínimo de la tienda que atiende', async () => {
-      const r = await crearPedido({ modo: 'ENTREGA', lineas: [{ skuId: leche().id, cantidad: 1 }], direccion: { linea: 'Cerca 1', ...DENTRO } }).expect(409);
-      expect(r.body).toMatchObject({ code: 'BAJO_PEDIDO_MINIMO', pedidoMinimoCents: 2500 });
+    it('sin pedido mínimo: 250 g de mantequilla con entrega se acepta y se suma el costo de reparto', async () => {
+      const mantequilla = [{ skuId: cat.bySku('MAN-SIN-250').id, cantidad: 1 }]; // S/ 14.90
+      const q = (await t.api().post('/v1/carrito/cotizar').send({ ubicacionId: cat.tiendaId, modo: 'ENTREGA', lineas: mantequilla, direccion: DENTRO }).expect(201)).body;
+      expect(q.puedePedir).toBe(true);
+      expect(q.tarifaEntregaCents).toBe(600);
+      expect(q.totalEstimadoCents).toBe(1490 + 600);
+      const p = (await crearPedido({ modo: 'ENTREGA', lineas: mantequilla, direccion: { linea: 'Cerca 1', ...DENTRO } }).expect(201)).body.pedido;
+      expect(p.estado).toBe('CONFIRMADO');
+      expect(p.totales).toMatchObject({ subtotalEstimadoCents: 1490, tarifaEntregaCents: 600, totalEstimadoCents: 2090 });
+      await t.api().post(`/v1/pedidos/${p.id}/cancelar`).set(auth(cliente)).expect(201);
+    });
+
+    it('la cotización de entrega trae el tiempo aproximado (rango) y el pedido guarda lo prometido', async () => {
+      const lineas = [{ skuId: cat.bySku('QUE-MOZ-500').id, cantidad: 1 }];
+      const q = (await t.api().post('/v1/carrito/cotizar').send({ ubicacionId: cat.tiendaId, modo: 'ENTREGA', lineas, direccion: DENTRO }).expect(201)).body;
+      expect(q.entregaEstimada).toMatchObject({ nivelCarga: 'NORMAL', sinRepartidores: false });
+      expect(q.entregaEstimada.minMin).toBeGreaterThanOrEqual(20);
+      expect(q.entregaEstimada.maxMin).toBeGreaterThan(q.entregaEstimada.minMin);
+      const recojo = (await t.api().post('/v1/carrito/cotizar').send({ ubicacionId: cat.tiendaId, modo: 'RECOJO', lineas }).expect(201)).body;
+      expect(recojo.entregaEstimada).toBeNull();
+      const p = (await crearPedido({ modo: 'ENTREGA', lineas, direccion: { linea: 'Cerca 2', ...DENTRO } }).expect(201)).body.pedido;
+      const prometida = new Date(p.entregaEstimadaEn).getTime();
+      expect(prometida - t.clock.now().getTime()).toBe(q.entregaEstimada.maxMin * 60_000);
+      await t.api().post(`/v1/pedidos/${p.id}/cancelar`).set(auth(cliente)).expect(201);
     });
 
     it('el resolver público devuelve tienda, distancia y tarifa', async () => {
@@ -297,25 +318,25 @@ describe('API de pedidos (e2e, PGlite en memoria)', () => {
 
       minutos(12);
       const mid = await detalle(emp.id, tienda);
-      expect(mid.entrega).toMatchObject({ minutosRestantes: 8, excedido: false });
+      expect(mid.entrega).toMatchObject({ minutosRestantes: 8, demorado: false, nivel: 'EN_TIEMPO' });
 
       const fin = (await accion(emp.id, 'entregar', repartidor).expect(201)).body;
       expect(fin.estado).toBe('ENTREGADO');
-      expect(fin.entrega.fueraDeFrio).toBe(false);
+      expect(fin.entrega.demorado).toBe(false);
     });
 
-    it('entregar pasados los 20 min se permite pero queda registrado como fuera de ventana', async () => {
+    it('pasados los 20 min no pasa nada grave: se ve ámbar "demorado", se entrega igual y queda registrado', async () => {
       const emp = await empacarEntrega();
       await accion(emp.id, 'despachar').expect(201);
       minutos(25);
       const vivo = await detalle(emp.id, tienda);
-      expect(vivo.entrega).toMatchObject({ excedido: true });
+      expect(vivo.entrega).toMatchObject({ demorado: true, nivel: 'DEMORADO' });
       expect(vivo.entrega.minutosRestantes).toBeLessThan(0);
       const fin = (await accion(emp.id, 'entregar', repartidor).expect(201)).body;
       expect(fin.estado).toBe('ENTREGADO');
-      expect(fin.entrega.fueraDeFrio).toBe(true);
+      expect(fin.entrega.demorado).toBe(true);
       const ev = fin.eventos.find((e: { evento: string }) => e.evento === 'entregar');
-      expect(ev.detalle.fueraDeFrio).toBe(true);
+      expect(ev.detalle.demorado).toBe(true);
     });
 
     it('el repartidor ve lo que puede recoger y lo que lleva; sale por su cuenta y queda asignado a él', async () => {
@@ -327,7 +348,7 @@ describe('API de pedidos (e2e, PGlite en memoria)', () => {
       await accion(emp.id, 'despachar', repartidor).expect(201);
       const ahora = (await t.api().get('/v1/reparto/pedidos').set(auth(repartidor)).expect(200)).body;
       const mio = ahora.enRuta.find((x: { id: string }) => x.id === emp.id);
-      expect(mio).toMatchObject({ minutosRestantes: 20, excedido: false });
+      expect(mio).toMatchObject({ minutosRestantes: 20, demorado: false });
       expect(mio.resumen.length).toBeGreaterThan(0);
       // el otro repartidor no lo lleva
       const otroRep = await login(t, PHONES.repartidor2);
@@ -341,9 +362,9 @@ describe('API de pedidos (e2e, PGlite en memoria)', () => {
       await accion(emp.id, 'despachar').expect(201);
       const r = (await t.api().get('/v1/tienda/reparto').set(auth(tienda)).expect(200)).body;
       expect(r.repartidores).toHaveLength(2);
-      expect(r.capacidadMaxima).toBe(4);
-      expect(r.maxMinutosFrio).toBe(20);
-      expect(r.enRuta.find((x: { pedidoId: string }) => x.pedidoId === emp.id)).toMatchObject({ minutosRestantes: 20, excedido: false });
+      expect(r.metaViajeMin).toBe(20);
+      expect(r.sinRepartidores).toBe(false);
+      expect(r.enRuta.find((x: { pedidoId: string }) => x.pedidoId === emp.id)).toMatchObject({ minutosRestantes: 20, demorado: false });
       await accion(emp.id, 'entregar', repartidor).expect(201);
     });
 
@@ -424,7 +445,7 @@ describe('API de pedidos (e2e, PGlite en memoria)', () => {
   });
 });
 
-describe('capacidad de reparto con 2 repartidores (base propia)', () => {
+describe('carga de reparto: nunca se rechaza una entrega, solo sube el tiempo estimado (base propia)', () => {
   let t: TestApp;
   let cat: Awaited<ReturnType<typeof loadCatalog>>;
   let cliente: string, tienda: string, rep1: string, rep2: string;
@@ -436,70 +457,88 @@ describe('capacidad de reparto con 2 repartidores (base propia)', () => {
   });
   afterAll(async () => t.close());
 
+  const lineas = () => [{ skuId: cat.bySku('QUE-MOZ-500').id, cantidad: 2 }];
+  const cotizar = async () =>
+    (await t.api().post('/v1/carrito/cotizar').send({ ubicacionId: cat.tiendaId, modo: 'ENTREGA', lineas: lineas(), direccion: DENTRO }).expect(201)).body;
   const pedirEntrega = () =>
-    t
-      .api()
-      .post('/v1/pedidos')
-      .set(auth(cliente))
-      .set('Idempotency-Key', idem())
-      .send({ ubicacionId: cat.tiendaId, modo: 'ENTREGA', pago: { token: 'tok_ok' }, lineas: [{ skuId: cat.bySku('QUE-MOZ-500').id, cantidad: 2 }], direccion: { linea: 'Av. Ejemplo 1', ...DENTRO } });
+    t.api().post('/v1/pedidos').set(auth(cliente)).set('Idempotency-Key', idem()).send({ ubicacionId: cat.tiendaId, modo: 'ENTREGA', pago: { token: 'tok_ok' }, lineas: lineas(), direccion: { linea: 'Av. Ejemplo 1', ...DENTRO } });
   const turno = (token: string, enTurno: boolean) => t.api().post('/v1/reparto/turno').set(auth(token)).send({ enTurno }).expect(201);
-
-  it('con 2 repartidores y máximo 2 pedidos cada uno, el quinto pedido de entrega se rechaza y se ofrece recojo', async () => {
-    for (let i = 0; i < 4; i++) await pedirEntrega().expect(201);
-    const r = await pedirEntrega().expect(409);
-    expect(r.body.code).toBe('REPARTO_SATURADO');
-    const q = (await t.api().post('/v1/carrito/cotizar').send({ ubicacionId: cat.tiendaId, modo: 'ENTREGA', lineas: [{ skuId: cat.bySku('QUE-MOZ-500').id, cantidad: 2 }], direccion: DENTRO }).expect(201)).body;
-    expect(q.puedePedir).toBe(false);
-    expect(q.entrega.reason).toBe('REPARTO_SATURADO');
-    // el recojo en tienda sigue disponible
-    await t.api().post('/v1/pedidos').set(auth(cliente)).set('Idempotency-Key', idem()).send({ ubicacionId: cat.tiendaId, modo: 'RECOJO', pago: { token: 'tok_ok' }, lineas: [{ skuId: cat.bySku('QUE-MOZ-500').id, cantidad: 1 }] }).expect(201);
-    const resumen = (await t.api().get('/v1/tienda/reparto').set(auth(tienda)).expect(200)).body;
-    expect(resumen).toMatchObject({ aceptaEntregas: false, motivoNoAcepta: 'REPARTO_SATURADO', pedidosActivos: 4 });
-  });
-
-  it('sin repartidores de turno no se acepta entrega ni se puede despachar; al volver al turno se reanuda', async () => {
-    await turno(rep1, false);
-    await turno(rep2, false);
-    const r = await pedirEntrega().expect(409);
-    expect(r.body.code).toBe('SIN_REPARTIDORES');
-    expect((await t.api().get('/v1/tienda/reparto').set(auth(tienda)).expect(200)).body.repartidores).toHaveLength(0);
-
-    // un pedido ya empacado no puede salir si no hay nadie de turno
-    await turno(rep1, true);
-    await turno(rep2, true);
-    const p = (await t.api().get('/v1/tienda/pedidos?estado=CONFIRMADO').set(auth(tienda)).expect(200)).body.find((x: { modo: string }) => x.modo === 'ENTREGA');
-    await t.api().post(`/v1/tienda/pedidos/${p.id}/iniciar-alistado`).set(auth(tienda)).expect(201);
-    for (const l of (await t.api().get(`/v1/tienda/pedidos/${p.id}`).set(auth(tienda)).expect(200)).body.lineas) {
-      await t.api().post(`/v1/tienda/pedidos/${p.id}/lineas/${l.id}/confirmar`).set(auth(tienda)).expect(201);
+  const alistarYEmpacar = async (id: string) => {
+    await t.api().post(`/v1/tienda/pedidos/${id}/iniciar-alistado`).set(auth(tienda)).expect(201);
+    for (const l of (await t.api().get(`/v1/tienda/pedidos/${id}`).set(auth(tienda)).expect(200)).body.lineas) {
+      await t.api().post(`/v1/tienda/pedidos/${id}/lineas/${l.id}/confirmar`).set(auth(tienda)).expect(201);
     }
-    await t.api().post(`/v1/tienda/pedidos/${p.id}/empacar`).set(auth(tienda)).expect(201);
-    await turno(rep1, false);
-    await turno(rep2, false);
-    const sinNadie = await t.api().post(`/v1/tienda/pedidos/${p.id}/despachar`).set(auth(tienda)).expect(409);
-    expect(sinNadie.body.code).toBe('SIN_REPARTIDORES');
-    await turno(rep1, true);
-    await t.api().post(`/v1/tienda/pedidos/${p.id}/despachar`).set(auth(tienda)).expect(201);
+    await t.api().post(`/v1/tienda/pedidos/${id}/empacar`).set(auth(tienda)).expect(201);
+  };
+
+  it('con 2 repartidores, muchos pedidos de entrega se aceptan todos y el tiempo estimado va subiendo', async () => {
+    const primera = await cotizar();
+    expect(primera.entregaEstimada.nivelCarga).toBe('NORMAL');
+    let ultimo = primera.entregaEstimada.maxMin;
+    for (let i = 0; i < 8; i++) {
+      await pedirEntrega().expect(201); // nunca 409: ni a los 4, ni a los 8
+      ultimo = Math.max(ultimo, (await cotizar()).entregaEstimada.maxMin);
+    }
+    const q = await cotizar();
+    expect(q.puedePedir).toBe(true);
+    expect(q.entregaEstimada.nivelCarga).toBe('ALTA');
+    expect(q.entregaEstimada.maxMin).toBeGreaterThan(primera.entregaEstimada.maxMin);
+    const panel = (await t.api().get('/v1/tienda/reparto').set(auth(tienda)).expect(200)).body;
+    expect(panel).toMatchObject({ nivelCarga: 'ALTA', sinRepartidores: false, pedidosPorAlistar: 8 });
+    expect(panel.estimadoNuevo.maxMin).toBe(q.entregaEstimada.maxMin);
   });
 
-  it('la tienda reparte la carga: el segundo pedido que sale va con el otro repartidor', async () => {
+  it('el recojo sigue siendo una opción más: no se ofrece como reemplazo ni se exige', async () => {
+    const q = await cotizar();
+    expect(q.puedePedir).toBe(true);
+    expect(JSON.stringify(q)).not.toMatch(/SATURADO|SIN_REPARTIDORES|solo recojo/i);
+  });
+
+  it('sin repartidores de turno el pedido igual entra, con tiempo estimado mayor y alerta para la tienda', async () => {
+    const antes = (await cotizar()).entregaEstimada.maxMin;
+    await turno(rep1, false);
+    await turno(rep2, false);
+    const q = await cotizar();
+    expect(q.puedePedir).toBe(true);
+    expect(q.entregaEstimada).toMatchObject({ sinRepartidores: true, nivelCarga: 'ALTA' });
+    expect(q.entregaEstimada.maxMin).toBeGreaterThanOrEqual(antes);
+    const p = (await pedirEntrega().expect(201)).body.pedido;
+    expect(p.estado).toBe('CONFIRMADO');
+    const panel = (await t.api().get('/v1/tienda/reparto').set(auth(tienda)).expect(200)).body;
+    expect(panel).toMatchObject({ sinRepartidores: true });
+    expect(panel.repartidores).toHaveLength(0);
+  });
+
+  it('despachar sin repartidores de turno funciona: sale sin asignar y lo entrega la tienda', async () => {
+    const p = (await pedirEntrega().expect(201)).body.pedido;
+    await alistarYEmpacar(p.id);
+    const sale = (await t.api().post(`/v1/tienda/pedidos/${p.id}/despachar`).set(auth(tienda)).expect(201)).body;
+    expect(sale.estado).toBe('EN_CAMINO');
+    expect(sale.entrega.repartidor).toBeNull();
+    expect(sale.entrega.minutosRestantes).toBe(20);
+    expect((await t.api().post(`/v1/tienda/pedidos/${p.id}/entregar`).set(auth(tienda)).expect(201)).body.estado).toBe('ENTREGADO');
+  });
+
+  it('con repartidores muy cargados igual se despacha, al menos cargado, aunque supere lo recomendado', async () => {
     await turno(rep1, true);
     await turno(rep2, true);
     const confirmados = (await t.api().get('/v1/tienda/pedidos?estado=CONFIRMADO').set(auth(tienda)).expect(200)).body.filter((x: { modo: string }) => x.modo === 'ENTREGA');
-    const salidas: string[] = [];
-    for (const p of confirmados.slice(0, 2)) {
-      await t.api().post(`/v1/tienda/pedidos/${p.id}/iniciar-alistado`).set(auth(tienda)).expect(201);
-      for (const l of (await t.api().get(`/v1/tienda/pedidos/${p.id}`).set(auth(tienda)).expect(200)).body.lineas) {
-        await t.api().post(`/v1/tienda/pedidos/${p.id}/lineas/${l.id}/confirmar`).set(auth(tienda)).expect(201);
-      }
-      await t.api().post(`/v1/tienda/pedidos/${p.id}/empacar`).set(auth(tienda)).expect(201);
+    expect(confirmados.length).toBeGreaterThanOrEqual(6);
+    const asignados: string[] = [];
+    for (const p of confirmados.slice(0, 6)) {
+      await alistarYEmpacar(p.id);
       const sale = (await t.api().post(`/v1/tienda/pedidos/${p.id}/despachar`).set(auth(tienda)).expect(201)).body;
-      salidas.push(sale.entrega.repartidor);
+      asignados.push(sale.entrega.repartidor);
     }
-    // El Repartidor 1 ya llevaba un pedido (prueba anterior): el primero que sale va con el menos cargado.
-    expect(salidas[0]).toBe('[DEMO] Repartidor 2');
-    const resumen = (await t.api().get('/v1/tienda/reparto').set(auth(tienda)).expect(200)).body;
-    expect(resumen.repartidores.reduce((a: number, r: { enRuta: number }) => a + r.enRuta, 0)).toBe(3);
-    expect(Math.max(...resumen.repartidores.map((r: { enRuta: number }) => r.enRuta))).toBeLessThanOrEqual(2);
+    const porRepartidor = asignados.reduce<Record<string, number>>((a, n) => ({ ...a, [n]: (a[n] ?? 0) + 1 }), {});
+    expect(Object.keys(porRepartidor)).toHaveLength(2); // se reparte entre los dos
+    expect(Math.max(...Object.values(porRepartidor))).toBe(3); // 6 pedidos: 3 y 3 (más de 2 cada uno, sin bloqueo)
+  });
+
+  it('pedidos con promesa vencida aparecen en el panel de la tienda', async () => {
+    t.clock.set(new Date(t.clock.now().getTime() + 3 * 60 * 60_000)); // pasan 3 horas
+    const panel = (await t.api().get('/v1/tienda/reparto').set(auth(tienda)).expect(200)).body;
+    expect(panel.conPromesaVencida.length).toBeGreaterThan(0);
+    expect(panel.enRuta.every((r: { demorado: boolean }) => r.demorado)).toBe(true);
   });
 });

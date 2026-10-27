@@ -89,9 +89,7 @@ export class OrdersService {
     if (input.modo === 'ENTREGA') {
       if (!input.direccion) throw new BadRequestException({ code: 'DIRECCION_REQUERIDA', message: 'Indica la dirección de entrega' });
       if (quote.entrega && !quote.entrega.ok) {
-        throw conflict(quote.entrega.reason, 'No podemos entregar este pedido en esa dirección', {
-          pedidoMinimoCents: 'pedidoMinimoCents' in quote.entrega ? quote.entrega.pedidoMinimoCents : undefined,
-        });
+        throw conflict(quote.entrega.reason, 'Esa dirección está fuera de nuestra cobertura de entrega');
       }
     }
 
@@ -115,6 +113,7 @@ export class OrdersService {
             propinaCents: quote.propinaCents,
             totalEstimadoCents: quote.totalEstimadoCents,
             totalAutorizadoCents: quote.totalAutorizadoCents,
+            entregaEstimadaEn: quote.entregaEstimada ? new Date(now.getTime() + quote.entregaEstimada.maxMin * 60_000) : null,
             notas: input.notas ?? null,
             idempotencyKey,
             creadoEn: now,
@@ -303,13 +302,11 @@ export class OrdersService {
         let repartidorId: string | null = actor === 'repartidor' ? actorId : null;
         if (!repartidorId) {
           const couriers = await this.delivery.courierLoads(tx, p.ubicacionId);
-          const pick = pickCourier(couriers, this.cfg.maxPedidosPorRepartidor);
-          if (!pick) {
-            throw conflict(couriers.length ? 'REPARTO_SATURADO' : 'SIN_REPARTIDORES', couriers.length ? 'Todos los repartidores en turno llevan el máximo de pedidos' : 'No hay repartidores en turno para salir ahora');
-          }
-          repartidorId = pick.id;
+          // Nunca se bloquea la salida: se asigna al menos cargado y, si nadie está de turno, sale sin
+          // repartidor asignado (lo entrega la tienda). La carga se refleja en el tiempo estimado, no en un rechazo.
+          repartidorId = pickCourier(couriers)?.id ?? null;
         }
-        const limite = coldChainDeadline(now, this.cfg.maxMinutesOutOfFridge);
+        const limite = coldChainDeadline(now, this.cfg.idealTripMinutes);
         await tx.update(entrega).set({ despachadoEn: now, repartidorId, limiteFrioEn: limite }).where(eq(entrega.pedidoId, p.id));
         detalle.repartidorId = repartidorId;
         detalle.limiteFrioEn = limite.toISOString();
@@ -318,9 +315,9 @@ export class OrdersService {
 
       case 'ENTREGADO': {
         const [en] = await tx.select().from(entrega).where(eq(entrega.pedidoId, p.id));
-        const fuera = !!en?.despachadoEn && coldChainStatus(en.despachadoEn, now, this.cfg.maxMinutesOutOfFridge).excedido;
-        await tx.update(entrega).set({ entregadoEn: now, fueraDeFrio: fuera }).where(eq(entrega.pedidoId, p.id));
-        if (en?.despachadoEn) detalle.fueraDeFrio = fuera;
+        const demorado = !!en?.despachadoEn && coldChainStatus(en.despachadoEn, now, this.cfg.idealTripMinutes).demorado;
+        await tx.update(entrega).set({ entregadoEn: now, demorado }).where(eq(entrega.pedidoId, p.id));
+        if (en?.despachadoEn) detalle.demorado = demorado;
         return {};
       }
 
@@ -371,7 +368,7 @@ export class OrdersService {
     };
     const t = plantilla[to];
     if (t) this.notifications.notify(p.clienteId, t, { numero: p.numero });
-    if (detalle.fueraDeFrio === true) this.notifications.notify(p.clienteId, 'entrega_fuera_de_ventana', { numero: p.numero });
+    if (detalle.demorado === true) this.notifications.notify(p.clienteId, 'entrega_demorada', { numero: p.numero });
   }
 
   // ───────────────────────── consultas ─────────────────────────
@@ -419,6 +416,8 @@ export class OrdersService {
       cliente: user.rol === 'cliente' ? undefined : c,
       direccion: p.direccionSnapshot,
       franja: p.franjaInicio ? { inicio: p.franjaInicio, fin: p.franjaFin } : null,
+      /** Hora aproximada de llegada que se le prometió al cliente (solo entregas). */
+      entregaEstimadaEn: p.entregaEstimadaEn,
       notas: p.notas,
       totales: {
         subtotalEstimadoCents: p.subtotalEstimadoCents,
@@ -453,16 +452,17 @@ export class OrdersService {
   }
 
   private async entregaDto(en: typeof entrega.$inferSelect) {
-    const st = en.despachadoEn && !en.entregadoEn ? coldChainStatus(en.despachadoEn, this.clock.now(), this.cfg.maxMinutesOutOfFridge) : null;
+    const st = en.despachadoEn && !en.entregadoEn ? coldChainStatus(en.despachadoEn, this.clock.now(), this.cfg.idealTripMinutes) : null;
     const [r] = en.repartidorId ? await this.db.select({ nombre: cliente.nombre }).from(cliente).where(eq(cliente.id, en.repartidorId)) : [];
     return {
       repartidor: r?.nombre ?? null,
       despachadoEn: en.despachadoEn,
       entregadoEn: en.entregadoEn,
       limiteFrioEn: en.limiteFrioEn,
-      fueraDeFrio: en.fueraDeFrio,
+      /** Ya entregado: lo registrado. En camino: si ya pasó la meta de 20 min (solo semáforo ámbar, sin bloqueo). */
+      demorado: en.entregadoEn ? en.demorado : (st?.demorado ?? false),
       minutosRestantes: st?.minutosRestantes ?? null,
-      excedido: st?.excedido ?? false,
+      nivel: st?.nivel ?? null,
     };
   }
 

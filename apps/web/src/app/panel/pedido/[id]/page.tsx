@@ -76,8 +76,14 @@ export default function PedidoPanel() {
             <ColdTimer limite={p.entrega.limiteFrioEn} />
           </div>
         )}
-        {p.estado === 'EMPACADO' && p.modo === 'ENTREGA' && <p className="font-semibold text-warn">Empacado: los 20 min de frío empiezan cuando el repartidor sale.</p>}
-        {p.entrega?.fueraDeFrio && <p className="font-semibold text-bad">Se entregó fuera de la ventana de 20 minutos.</p>}
+        {p.modo === 'ENTREGA' && p.entregaEstimadaEn && !['ENTREGADO', 'CANCELADO', 'REEMBOLSADO'].includes(p.estado) && (
+          <p className={`font-semibold ${new Date(p.entregaEstimadaEn).getTime() < Date.now() ? 'text-warn' : 'text-ink-soft'}`}>
+            Hora aproximada prometida al cliente: {formatTime(p.entregaEstimadaEn)}
+            {new Date(p.entregaEstimadaEn).getTime() < Date.now() ? ' (ya pasó)' : ''}
+          </p>
+        )}
+        {p.estado === 'EMPACADO' && p.modo === 'ENTREGA' && <p className="font-semibold text-ink-soft">Empacado: la meta de 20 min empieza cuando el repartidor sale.</p>}
+        {p.entrega?.demorado && p.estado === 'ENTREGADO' && <p className="font-semibold text-warn">Se entregó pasada la meta de 20 minutos.</p>}
       </Card>
 
       {error && <ErrorBox>{error}</ErrorBox>}

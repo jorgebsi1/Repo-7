@@ -1,0 +1,1 @@
+ALTER TABLE "entrega" ADD COLUMN "demorado" boolean DEFAULT false NOT NULL;

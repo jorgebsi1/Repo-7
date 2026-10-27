@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button, Card, Empty, ErrorBox, Icon, Skeleton, Stepper } from '@/components/ui';
-import { errorMessage, grams, money } from '@/lib/format';
+import { errorMessage, grams, money, rangoMin } from '@/lib/format';
 import { useQuote } from '@/lib/quote';
 import { useShop } from '@/lib/shop';
 
@@ -63,6 +63,7 @@ export default function Carrito() {
           <Card className="space-y-2 p-4">
             <Row label="Subtotal" value={money(quote.subtotalCents)} />
             {modo === 'ENTREGA' && <Row label="Entrega" value={quote.entrega?.ok ? (quote.tarifaEntregaCents === 0 ? 'Gratis' : money(quote.tarifaEntregaCents)) : 'Se calcula con tu dirección'} />}
+            {modo === 'ENTREGA' && quote.entregaEstimada && <Row label="Entrega estimada" value={rangoMin(quote.entregaEstimada)} />}
             <div className="border-t border-line pt-2">
               <Row label="Total estimado" value={money(quote.totalEstimadoCents)} strong />
             </div>

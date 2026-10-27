@@ -136,11 +136,11 @@ Reglas:
 ## 8. Hipótesis de MVP (actualizado tras la tanda 3)
 1. **Piloto en Trujillo** (confirmado). Tiendas por definir; las del esqueleto son ficticias.
 2. Catálogo reducido de los productos más vendidos y de mejor conservación.
-3. **Recojo en tienda** y **entrega a domicilio** hasta **4 km** de la tienda más cercana, en **cooler y máximo 20 minutos desde que sale el repartidor**, con **2 repartidores propios**. Si no hay repartidores de turno o están saturados, se ofrece recojo.
+3. **Recojo en tienda** y **entrega a domicilio** hasta **4 km** de la tienda más cercana, en **cooler**, con meta de **20 minutos desde que sale el repartidor** (semáforo, no límite) y **2 repartidores propios**. **Nunca se rechaza una entrega** por carga ni por monto: se muestra un **tiempo estimado** que crece con la demora, y no hay pedido mínimo (se suma el costo de reparto).
 4. Pago con tarjeta y Yape/Plin; efectivo contra entrega por decidir.
 5. Panel de tienda para alistar, pesar, empacar y despachar; vista del repartidor con cuenta regresiva; Libro de Reclamaciones visible; comprobante electrónico.
 6. **POS de mostrador e inventario en tiempo real** (etapa 4B): ventas de mostrador, recepción de los camiones de los miércoles y domingos, apertura y cierre de turno.
-7. Meta de aprendizaje: pedidos/día, % de faltantes, **% de entregas fuera de la ventana de 20 min**, recompra a 30 días.
+7. Meta de aprendizaje: pedidos/día, % de faltantes, **% de entregas demoradas (más de 20 min)** y **tiempo prometido vs. real** para ajustar el estimado, recompra a 30 días.
 8. Después: Chiclayo y Lima, **pedidos por mayor desde la planta más cercana**, suscripciones.
 
 ## 9. Decisiones del cuestionario: estado
@@ -151,7 +151,8 @@ Reglas:
 | Origen de cada pedido | ✅ Menor: tienda más cercana · Mayor: planta más cercana (fuera del piloto) |
 | Reparto | ✅ 2 repartidores propios al inicio |
 | Cobertura | ✅ Radio de 4 km (línea recta) |
-| Ventana de frío | ✅ 20 min desde que sale el repartidor, en cooler |
+| Tiempo de reparto | ✅ Meta de 20 min desde que sale el repartidor, en cooler; extensible, sin límite crítico; se avisa el tiempo aproximado |
+| Rechazo de entregas / pedido mínimo | ✅ Ninguno: siempre se acepta dentro de 4 km y se suma el costo de reparto |
 | Tiendas, direcciones y horarios | ⏳ Pendiente (pregunta 46) |
 | Pasarela y facturación | ⏳ Pendiente |
 | Presupuesto y fecha | ⏳ Pendiente |
